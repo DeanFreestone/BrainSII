@@ -1,0 +1,86 @@
+%
+%  untitled
+%
+%  Created by Dean Freestone on 2010-07-13.
+%  Copyright (c) 2010 . All rights reserved.
+%
+\documentclass[]{article}
+
+% Use utf-8 encoding for foreign characters
+\usepackage[utf8]{inputenc}
+
+% Setup for fullpage use
+\usepackage{fullpage}
+
+% Uncomment some of the following if you use the features
+%
+% Running Headers and footers
+%\usepackage{fancyhdr}
+
+% Multipart figures
+%\usepackage{subfigure}
+
+% More symbols
+%\usepackage{amsmath}
+%\usepackage{amssymb}
+%\usepackage{latexsym}
+
+% Surround parts of graphics with box
+\usepackage{boxedminipage}
+
+% Package for including code in the document
+\usepackage{listings}
+
+% If you want to generate a toc for each chapter (use with book)
+\usepackage{minitoc}
+
+% This is now the recommended way for checking for PDFLaTeX:
+\usepackage{ifpdf}
+
+%\newif\ifpdf
+%\ifx\pdfoutput\undefined
+%\pdffalse % we are not running PDFLaTeX
+%\else
+%\pdfoutput=1 % we are running PDFLaTeX
+%\pdftrue
+%\fi
+
+\ifpdf
+\usepackage[pdftex]{graphicx}
+\else
+\usepackage{graphicx}
+\fi
+\title{Brain Stimulation Induced Interactions}
+\author{In no particular order: Dean R. Freestone, Tim S. Nelson, Alan Lai, Simon Vogrin,\\
+ Michael Murphy?, David B. Grayden, Mark J. Cook}
+
+\date{2010-07-13}
+
+\begin{document}
+
+\ifpdf
+\DeclareGraphicsExtensions{.pdf, .jpg, .tif}
+\else
+\DeclareGraphicsExtensions{.eps, .jpg}
+\fi
+
+\maketitle
+
+
+\begin{abstract}
+\end{abstract}
+
+\section{Introduction}
+Epilepsy is a chronic disease of the brain that affects 1-2\% of people. Its defining characteristic is recurrent seizures, carrying a risk of injury, brain damage or death. Anti-epileptic drugs are the mainstay of treatment.  Despite this, one third of focal epilepsy patients have uncontrolled seizures. For these people, seizure onset is unpredictable, severely impairing quality of life.
+
+Although seizure occurrence appears to be random, there is evidence that the brain undergoes subtle changes prior to seizures. This evidence was initially anecdotal, with patients and their family and friends reporting strange feelings or behaviour in the minutes or hours prior to seizures. More recently, scientists have observed changes in the form of hyper-activity in the brain’s dynamics prior to seizures, using a variety of medical imaging techniques.
+
+The field of seizure prediction has developed considerably over the last 30 years, yet today this important problem is still unsolved....
+
+\section{Method}
+
+\subsection{Data}
+Data was collected from patients undergoing  evaluation for the surgical resection of epileptic foci at St. Vincent's Public and Private Hospital's in Melbourne, Australia. Data was collected with informed consent from patients under ethics approval from St. Vincent's Public and Private Human Research Ethics Committee (HREC-A 006\{\}08). 
+\bibliographystyle{plain}
+\bibliography{}
+\end{document}
