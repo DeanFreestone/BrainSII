@@ -4,6 +4,8 @@
 %  Created by Dean Freestone on 2010-07-13.
 %  Copyright (c) 2010 . All rights reserved.
 %
+% \newcommand{\dean}[1]{\textsf{\emph{\textbf{\textcolor{green}{#1}}}}} 
+
 \documentclass[]{article}
 
 % Use utf-8 encoding for foreign characters
@@ -34,6 +36,7 @@
 % If you want to generate a toc for each chapter (use with book)
 \usepackage{minitoc}
 
+
 % This is now the recommended way for checking for PDFLaTeX:
 \usepackage{ifpdf}
 
@@ -52,7 +55,7 @@
 \fi
 \title{Brain Stimulation Induced Interactions}
 \author{In no particular order: Dean R. Freestone, Tim S. Nelson, Alan Lai, Simon Vogrin,\\
- Michael Murphy?, David B. Grayden, Mark J. Cook}
+ Michael Murphy?, David B. Grayden, Anthony N. Burkitt, Mark J. Cook}
 
 \date{2010-07-13}
 
@@ -90,11 +93,11 @@ The research focus in EEG-based seizure anticipation has since shifted to iEEG s
 Although the aforementioned methods are mathematically quite different, they are all conceptually similar and focused on measuring the degree of order within the brain, where a decrease in complexity indicates an abnormal hyper-synchronous state associated with a pre-seizure state. 
 
 \subsubsection{Active monitoring of excitability holds significant promise for seizure anticipation}
-The active probing approach represents a significant paradigm shift in the field of seizure prediction and has the potential to solve this important problem. Recent theoretical evidence suggests an active approach is required for seizure anticipation~\cite{Suffczynski2008}. This supports our methodology in the proposed study. In addition, our colleagues in the Dept of Electrical and Electronic Engineering at the University of Melbourne have provided further evidence for the need of an active approach. It was shown that the failure of EEG-based seizure prediction algorithms is not because the correct EEG feature has not been found, but rather that seizure precursors are not observable from the passively recorded EEG signal itself.  That is, the passive EEG only allows the observation of a very small fraction of the underlying generators of brain activity (O’Sullivan-Greene et al. 2010, O’Sullivan-Greene et al. 2009a). This indicates that seizure anticipation from passive EEG is unlikely to succeed. However, it was shown (through computer simulation) that the clever use of a probing stimulus can extract information from the EEG to facilitate seizure anticipation, even if the underlying neuro-dynamics can not be observed in the passive EEG measurements (O’Sullivan-Greene et al. 2009b). 
+The active probing approach represents a significant paradigm shift in the field of seizure prediction and has the potential to solve this important problem. Recent theoretical evidence suggests an active approach is required for seizure anticipation~\cite{Suffczynski2008}. This supports our methodology in the proposed study. In addition, our colleagues in the Dept of Electrical and Electronic Engineering at the University of Melbourne have provided further evidence for the need of an active approach. It was shown that the failure of EEG-based seizure prediction algorithms is not because the correct EEG feature has not been found, but rather that seizure precursors are not observable from the passively recorded EEG signal itself.  That is, the passive EEG only allows the observation of a very small fraction of the underlying generators of brain activity~\cite{O'Sullivan-Greene2009,O'Sullivan-Greene2009a} This indicates that seizure anticipation from passive EEG is unlikely to succeed. However, it was shown (through computer simulation) that the clever use of a probing stimulus can extract information from the EEG to facilitate seizure anticipation, even if the underlying neuro-dynamics can not be observed in the passive EEG measurements~\cite{O'Sullivan-Greene2009a}. 
 Our results suggest that the lack of information in the passive EEG signal can be overcome through active electrical probing for two reasons. First, electrical probing is a way to raise EEG signals above the background noise level by averaging over multiple trials. Indeed, averaging the direct response to a known stimulus pulse to estimate excitability effectively cancels spurious fluctuations from ongoing brain processes, and provides spatially specific information when stimuli are targeted using intracranial grid electrodes. Second, we expect the brain’s response to be specific to a specific probing signal.  So whilst the EEG only lets us see a small fraction of the underlying dynamics, we can tailor our analysis to ensure that the fraction of dynamics visible in the EEG gives us the specific information necessary for seizure anticipation.
 We hypothesize that larger cortical responses to stimulation indicate higher cortical excitability and a greater chance of a seizure occurring. Our preliminary data suggest that the method is effective.
 The oscillatory nature of the rhythms of the brain lends them naturally to synchronisation analysis. 
-Kalitzin et al. (2005) derived the relative phase clustering index (rPCI), which measures the amount of power in the brain’s rhythmic activity in response to bursts of stimulation at harmonics of the stimulation frequency (they used 10, 15 and 20 biphasic pulses per second in each burst) relative to the power at the stimulation frequency. A high rPCI indicates that the stimulation has entrained the brain’s rhythms, implying a high level of excitability. Their results demonstrated a relationship between the ictal state and elevated excitability levels for mesial temporal lobe epilepsies (MTLE). These results illustrate the feasibility of using a probing stimulus for tracking cortical excitability.
+Kalitzin et al.~\cite{Kalitzin2005} derived the relative phase clustering index (rPCI), which measures the amount of power in the brain’s rhythmic activity in response to bursts of stimulation at harmonics of the stimulation frequency (they used 10, 15 and 20 biphasic pulses per second in each burst) relative to the power at the stimulation frequency. A high rPCI indicates that the stimulation has entrained the brain’s rhythms, implying a high level of excitability. Their results demonstrated a relationship between the ictal state and elevated excitability levels for mesial temporal lobe epilepsies (MTLE). These results illustrate the feasibility of using a probing stimulus for tracking cortical excitability.
 
 \section{Method}
 
