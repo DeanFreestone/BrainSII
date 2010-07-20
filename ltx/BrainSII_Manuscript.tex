@@ -4,10 +4,11 @@
 %  Created by Dean Freestone on 2010-07-13.
 %  Copyright (c) 2010 . All rights reserved.
 %
-% \newcommand{\dean}[1]{\textsf{\emph{\textbf{\textcolor{green}{#1}}}}} 
 
 \documentclass[]{article}
 
+\usepackage{color}
+\newcommand{\dean}[1]{\textsf{\emph{\textbf{\textcolor{green}{#1}}}}} 
 % Use utf-8 encoding for foreign characters
 \usepackage[utf8]{inputenc}
 
@@ -23,8 +24,8 @@
 %\usepackage{subfigure}
 
 % More symbols
-%\usepackage{amsmath}
-%\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amssymb}
 %\usepackage{latexsym}
 
 % Surround parts of graphics with box
@@ -74,14 +75,14 @@
 \end{abstract}
 
 \section{Introduction}
-\subsection{From LEW Carty Application}
-Epilepsy is a chronic disease of the brain that affects 1-2\% of people. Its defining characteristic is recurrent seizures, carrying a risk of injury, brain damage or death. Anti-epileptic drugs are the mainstay of treatment.  Despite this, one third of focal epilepsy patients have uncontrolled seizures. For these people, seizure onset is unpredictable, severely impairing quality of life.
+% \subsection{From LEW Carty Application}
+% Epilepsy is a chronic disease of the brain that affects 1-2\% of people. Its defining characteristic is recurrent seizures, carrying a risk of injury, brain damage or death. Anti-epileptic drugs are the mainstay of treatment.  Despite this, one third of focal epilepsy patients have uncontrolled seizures. For these people, seizure onset is unpredictable, severely impairing quality of life.
+% 
+% Although seizure occurrence appears to be random, there is evidence that the brain undergoes subtle changes prior to seizures. This evidence was initially anecdotal, with patients and their family and friends reporting strange feelings or behaviour in the minutes or hours prior to seizures. More recently, scientists have observed changes in the form of hyper-activity in the brain’s dynamics prior to seizures, using a variety of medical imaging techniques.
+% 
+% The field of seizure prediction has developed considerably over the last 30 years, yet today this important problem is still unsolved....
 
-Although seizure occurrence appears to be random, there is evidence that the brain undergoes subtle changes prior to seizures. This evidence was initially anecdotal, with patients and their family and friends reporting strange feelings or behaviour in the minutes or hours prior to seizures. More recently, scientists have observed changes in the form of hyper-activity in the brain’s dynamics prior to seizures, using a variety of medical imaging techniques.
-
-The field of seizure prediction has developed considerably over the last 30 years, yet today this important problem is still unsolved....
-
-\subsection{From NHMRC Application}
+\subsection{Epilepsy Background}
 Epilepsy is a chronic disease of the brain that affects around 1-2\% of the world’s population~\cite{Beran1985,Dua2006}. The high incidence of epilepsy is due to the large number of possible causes including developmental abnormalities, genetic abnormalities, febrile convulsions and brain insults, such as head trauma, hypoxia, ischemia, tumours and central nervous system infections. Head trauma remains a major cause, and is often particularly difficult to treat. However, approximately one third of epilepsies are cryptogenic~\cite{Theodore2006}.
 The defining characteristic of epilepsy is recurrent seizures, which reflect a sudden excess of hyper-synchronous activity of neurons in the cerebral cortex. EEG recordings of epileptic seizures show that these hyper-synchronous discharges may begin locally in one hemisphere; these are called partial or focal seizures, with single or multiple foci in portions of one cerebral hemisphere. Seizures may also occur simultaneously in both cerebral hemispheres; these are called generalised seizures. Partial seizures may remain localised with sensory, motor, cognitive, or autonomic symptoms, leading to loss of awareness or more severe symptoms associated with generalised convulsive seizures. Generalised seizures cause altered consciousness at their onset, followed by motor symptoms of varying severity, ranging from brief body jerks to generalised tonic-clonic (convulsive) movements. Seizures may occur from hundreds of times per day to once every few years. Frequent or lengthy uncontrollable seizures carry a risk of irreversible brain damage, and the syndrome of sudden unexpected death (SUDEP) is a common cause of death of people with epilepsy.
 Anti-epileptic drugs (AEDs) are currently the mainstay of epilepsy treatment. Despite state-of-the-art medical management with modern AEDs, at least 30\% of patients with focal epilepsy continue to have frequent life-threatening seizures~\cite{Schmidt2005}. For patients who do not respond to AEDs, a possible treatment is surgical resection of pathological brain tissue.  However, surgery is not a viable option for the great majority of this patient group, because the responsible lesions are too large, multiple, cannot be defined, or in eloquent brain regions. For these people, seizures may strike at any time, leaving them severely restricted in their day-to-day activities. The hazard associated with seizures is related to the convulsive episode itself to some extent, but the major hazard relates to the circumstances of the event – including driving, swimming, and operating dangerous machinery. The most significant factor leading to disability for these people is the current inability to anticipate and control seizures. This places enormous limitations upon patients in virtually every sphere of their lives, by impacting upon family, social, educational, and vocational activities. Everyday activities such as driving a car or playing sport are at best fraught with insecurity and at worst become impossible.
@@ -100,13 +101,219 @@ The oscillatory nature of the rhythms of the brain lends them naturally to synch
 Kalitzin et al.~\cite{Kalitzin2005} derived the relative phase clustering index (rPCI), which measures the amount of power in the brain’s rhythmic activity in response to bursts of stimulation at harmonics of the stimulation frequency (they used 10, 15 and 20 biphasic pulses per second in each burst) relative to the power at the stimulation frequency. A high rPCI indicates that the stimulation has entrained the brain’s rhythms, implying a high level of excitability. Their results demonstrated a relationship between the ictal state and elevated excitability levels for mesial temporal lobe epilepsies (MTLE). These results illustrate the feasibility of using a probing stimulus for tracking cortical excitability.
 
 \section{Method}
-
+\subsection{Data Acquisition and Stimulation Protocol}
 \subsection{Data}
-Data was collected from patients undergoing  evaluation for the surgical resection of epileptic foci at St. Vincent's Public and Private Hospital's in Melbourne, Australia. Data was collected with informed consent from patients under ethics approval from St. Vincent's Public and Private Human Research Ethics Committee (HREC-A 006-08).
+Data was collected from patients undergoing evaluation for the surgical resection of epileptic foci at St. Vincent's Public and Private Hospital's in Melbourne, Australia. Data was collected with informed consent under ethics approval from St. Vincent's Public and Private Human Research Ethics Committee (HREC-A 006/08).
 
-\begin{tabular}{c|c|c|c|c} \hline
-\textbf{Patient Number (ID)} & \textbf{Electrode Type} & \textbf{Stimulation Channels} & \textbf{Number of Seizures} & Number of Probe Sessions\\ \hline
+The standard clinical practice for epilepsy related surgery involves a diagnostic period of one week where intracranial EEG electrodes are implanted directly on the surface of the brain. These electrodes are used to map functional brain tissue by applying electrical stimulation and pathological brain tissue by recording abnormal oscillations in the electrical fields of the brain during seizures. 
+
+\begin{tabular}{|p{2.4cm}|p{2.4cm}|p{2.4cm}|p{2.4cm}|p{3cm}|} \hline
+\textbf{Patient Number (ID)} & \textbf{Electrode Type} & \textbf{Stimulation Channels} & \textbf{Number of Seizures} & \textbf{Number of Probe Sessions}\\ \hline
+1 (AGAH) & 64 channel grid & R Y B W & 1 & 1 \\ \hline
+2 (MSOC) & grid & R Y B W & 1 & 1 (subclinical) \\ \hline
+3 (OKEM) & Depth & R Y B W & 1 & 3 \\ \hline
+4 (IGLC) & Grid & R Y B W & 3 & 1 \\ \hline
+5 (RCAS) & Grid & R Y B W & 1 & 1 \\ \hline
+6 (UMIK) & Grid & R Y B W & 1 & 1 \\ \hline
+7 (EKET) & Grid & R Y B W & 1 & 1 \\ \hline
 \end{tabular}
+
+The electrical probing stimuli (delivered by a Grass S88x neurostimulator, Astro-Med) is interleaved to pairs of electrodes. Stimulation sites were targeted to the suspected pathologies using single biphasic, charge-balanced electrical pulses (pulse width 100 $\mu$s). Charge balancing eliminated the risk of adverse polarisation and corrosion of electrodes. The current intensity was set to 1~mA, which yields a charge/phase of 0.1~$\mu$C/phase and a charge density of approximately 0.2~$\mu$C/phase/cm2. This charge density is two orders of magnitude below the well-documented safety limits of 30~$\mu$C/phase/cm2 (Vonck et al. 2002; Kerrigan et al. 2004; Kuncel \& Grill 2004; Osorio et al. 2007; Velasco et al. 2007). Stimuli will be targeted to low-impedance electrodes, away from the cerebral vasculature, to the suspected epileptic foci and surrounding tissue.
+
+All data was collected via intracranial grid electrodes (Ad-Tech medical), which were comprised of an array of platinum disk electrodes with regular spacing of 10~mm and 4~mm diameter. The number of electrodes varied in each patient depending on the clinical needs. Intracranial EEG was sampled at a rate of 5~kHz and the system (Synamp2, Compumedics) allowed for recording from a DC level, so transient responses to stimuli can be observed.
+\subsection{Data Analysis}
+Electric potential measured from iEEG has
+an oscillatory behavior. By assuming the oscillations are generated
+by individual cortical columns, it is possible to study their
+interaction. As with many systems in nature, synchronisation
+phenomena can be observed. Abnormal levels of phase and frequency
+entrainment have been associated with different neurological
+disorders, particularly Parkinson's disease and epilepsy.
+Synchronisation also seems to be a central mechanism for neural
+information processing within a brain, as well as for communication
+between different brain areas~\cite{Rosenblum2001}. This concept
+was discussed earlier in reference to seizure prediction. Following
+the hypothesis that widespread neural interaction is required for
+information processing and executing tasks, it makes sense to
+quantifying the interactions for both epileptic seizure prediction
+and brain computer interfacing. Below a description of some methods
+used to observe these events is described.\\
+
+The measurement of synchrony in the brain is a non-trivial task.
+Intracranial EEG oscillations are irregular, noisy, non-stationary
+and at times chaotic. Therefore any synchrony can be masked. The
+problem can be stated as: we are trying to measure interaction
+between complex systems with an unknown underlying structure via
+data from two time series. This interaction is some kind of
+dependance of one system on the other.\\
+
+
+\subsection{Linear Cross-correlation}
+This is the simplest measure of synchronisation, it is defined in
+the time domain as a function of the time lag $\tau$, where $\tau =
+-(N-1),...,0,...,N-1$ by
+\begin{equation}
+C_{XY}{\tau} = \begin{array}{l l}
+  \frac{1}{N-\tau}\sum_{n=1}^{N-\tau}x_{n+\tau}y_n & \quad \tau \geq 0\\
+  C_{YX}(-\tau) & \quad \tau <0\\ \end{array}
+\end{equation}
+
+A quantitative measure of this linear correlation is
+
+\begin{equation}
+C_{max} = max\{|C_{XY}(\tau)|\}
+\end{equation}
+
+This analysis method has the advantage of being very simple, but it
+fails to capture the nonlinear dynamics such as phase
+synchronisation.
+
+\subsection{Phase Synchronisation}
+
+When quantifying the synchronisation of phases of two times series,
+$x$ and $y$, we first need to find the instantaneous phases,
+$\phi_x(t)$ and $\phi_y(t)$. Phase locking is defined as
+\begin{equation}
+m\phi_x(t)-n\phi_y(t) = const
+\end{equation}
+
+Where $m$ and $n$ are integers~\cite{Huygens1673}. Phase
+entrainment is defined as
+\begin{equation}
+m\phi_x(t)-n\phi_y(t) < const
+\end{equation}
+
+This definition is for the case of noisy and/or chaotic
+systems~\cite{Rosenblum1996} such as iEEG.\\
+
+There are multiple ways of extracting the instantaneous phase of a
+time series, here we discus two approaches: the analytic signal
+approach using the Hilbert transform (HT), and using the
+continuous wavelet transform (CWT).\\
+
+Using the analytic signal approach, the analytic signal is defined
+as
+\begin{equation}
+Z_x(t) = x(t) + i\tilde{x}(t) = A_x^H(t)e^{i\phi_x^H(t)}
+\end{equation}
+
+where $\tilde{x}(t)$ is the HT of $x(t)$ and
+
+\begin{equation}
+\tilde{x}(t) =
+\frac{1}{\pi}P.V.\int_{-\infty}^{+\infty}\frac{x(t')}{t-t'}dt'
+\end{equation}
+
+where $P.V.$ denotes the Cauchy principle value.
+
+The Hilbert transform can also be calculated using Fourier theory.
+\begin{equation}
+\tilde{x}(t) = -iFT^{-1}[FT[x(t)]sign(\omega)]
+\end{equation}
+
+This definition demonstrates that the transform gives a translation
+of the phase in the frequency domain by $\frac{\pi}{2}$, for all
+frequencies, whilst the power remains unchanged.\\
+
+The Hilbert phase is defined as
+\begin{equation}
+\phi_x^{H}(t) = \arctan\frac{\tilde{x}(t)}{x(t)}
+\label{instPhase}
+\end{equation}
+
+An alternate description of the instantaneous phase accounting for
+$2\pi$ phase jumps is shown below.
+
+\begin{equation}
+\beta_x^{H}(t) = \arctan\frac{\tilde{x}(t)}{x(t)}+2\pi l(t)
+\end{equation}
+
+where $\beta$ is the accumulated phase. The function $l(t)$ is
+incremented or decremented by one for each clockwise or
+counter-clockwise orbit of the reconstructed trajectory in the phase
+space or transition from $2\pi$ to $-2\pi$. For explanatory purposes
+the simpler equation described by equation~\ref{instPhase} will be
+used for future descriptions, and a statistical method will be used
+to find
+a measure of synchronization.\\
+
+This definition of the instantaneous phase only makes sense when
+there is a dominant peak in the power spectrum or when oscillations
+are extracted via bandpass
+filtering for the frequency of interest~\cite{Rosenblum2004}.\\
+
+By using the wavelet approach the frequency range of interest can be
+set without bandpass filtering. Below the complex Morlett wavelet is
+defined.
+\begin{equation}
+\psi(t) =
+(e^{i\omega_ct}-e^{\omega_c^2t\sigma^2/2})e^{-t^2/2\sigma^2}
+\end{equation}
+
+Convolution with time series yields wavelet coefficients
+\begin{equation}
+W_l(t) = (\psi\circ x)(t) = \int\psi(t')x(t-t')dt'
+\end{equation}
+
+Then the phase can be defined
+\begin{equation}
+\phi_x^W(t)=\arctan\frac{Im(W(t))}{Re(W(T))}
+\end{equation}
+
+As mentioned earlier, the $\pm2\pi$ phase jumps add further
+complexity to the measurement of phase difference between the
+signals. A common method for over coming this problem based on a
+statistical approach using the \emph{index based on circular
+variance} as defined below
+
+\begin{equation}
+\gamma = |\frac{1}{N}\sum_{j=1}^N e^{i[n\phi_x(t)-m\phi_y(t)]}| =
+1-CV
+\end{equation}
+
+where $CV$ denotes the circular variance of an angular distribution,
+and $\gamma$ is also known as the phase locking value (PLV) or the
+mean phase coherence. The integers $n$ and $m$ allow comparison of
+different frequency, where $n:m$ is the ratio of the mean frequency
+of the observed times series. The values of $\gamma$ fall into the
+interval $[0,1]$, where values of zero indicate uncorrelated phase
+differences and a phase synchronisation of one shows perfect
+synchronisation. This measure is independent of amplitude.\\
+
+%Because the phase distribution is non-uniform there will be an
+%over-estimation of phase synchronization. To account for the bias
+%the phase index $\gamma$ must be compared to a surrogate data set
+%$\gamma^S$ with a maximally uniform distribution.
+%\begin{equation}
+%\gamma^* = \begin{array}{l l}
+%  0 & \quad \gamma<\gamma^S\\
+%  \frac{\gamma-\gamma^S}{1-\gamma^S} & \quad \gamma\geq \gamma^S\\ \end{array}
+%\end{equation}
+%
+%The surrogate data $\gamma^S$ is composed of the mean of 10 shuffled
+%versions of the phase from one the signals. The phase shuffling has
+%been achieved by the following process.\\
+%
+%\begin{itemize}
+%\item The first shuffled signal a reversed copy of the original.
+%\item The second shuffled signal is the reversed copy the original
+%split in two equal length vectors positions switched, then the new
+%vector is reversed.
+%\item The third shuffled signal uses the same approach as the second
+%signal, expect the original is split into thirds
+%\end{itemize}
+
+%\[SurData_1 = \phi_n \quad n=\{N,N-1,...,2,1\}\]
+%\[SurData_2 = flip\{\phi_{\eta}, \phi{\xi}\}\]
+%\[\eta = \{floor(N/2)+1,floor(N/2)+2,...,N\}\]
+%\[\xi = \{1,2,...,N/2\}\]
+%\[SurData_3 = flip\{\phi_{\alpha}, \phi_{\beta}, \phi_{\delta}\}\]
+%\[\alpha = \{floor(2N/3)+1,floor(2N/3)+2,...,N\}\]
+%\[\beta = \{floor(N/3)+1,floor(N/3)+2,...,floor(2N/3)\}\]
+%\[\delta = \{1,2,...,floor(N/3)\}\]
+
+
+
 
 
 \bibliographystyle{plain}
