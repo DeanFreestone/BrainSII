@@ -125,18 +125,22 @@ In parallel to the standard clinical procedure, the electrical stimulation proto
 All data was collected via intracranial grid electrodes (Ad-Tech medical), which were comprised of an array of platinum disk electrodes with regular spacing of 10~mm and 4~mm diameter. The number of electrodes varied in each patient depending on the clinical needs. Intracranial EEG was sampled at a rate of 5~kHz and the system (Synamp2, Compumedics) allowed for recording from a DC level, so transient responses to stimuli could be observed.
 
 \subsection{Data Analysis}
-\subsubsection{Preprocessing}
-The first pre-processing step was to identify channels that had very poor signal quality via visual inspection. Data from these channels were set to the $nan$ data type and excluded from further analysis. In the next step, the data was re-referenced to a differential montage to remove common mode artifact and the effect of the reference electrode. Next the data was low-pass filtered with a cut-off frequency of 100~Hz. The data was then resampled from 5~kHz to 1~kHz. To enable spatial visualisation and spatial frequency analysis, the corrupted channels, set to $nan$, were interpolated using all neighbouring channels.
+\subsubsection{Preprocessing and Epoching}
+The first pre-processing step was to identify channels that had very poor signal quality via visual inspection. Data from these channels were set to the $nan$ data type and excluded from further analysis. In the next step, the sample corresponding to the time of each stimuli was identified. Then \dean{3?} samples either side of this sample were removed from the time series, and reintroduced using linear interpolation. This removed the stimulus artifacts~\ref{Heffer2008}. The data was then re-referenced to a differential montage, to remove common-mode interference and the effect of the reference electrode. Only neighbouring pairs in the x-y direction of the electrode where both electrodes gave good signal quality where used. Next, the data was smoothed using a $n^th$-order moving average filter. This step removed sharp fluctuations in the signal that lead to problems when applying digital filtering. Next, the data was low-pass filtered with a cut-off frequency of 100~Hz using a $n^{th}$-order zero-phase Butterworth filter. The data was then resampled from 5~kHz to 1~kHz for further processing.
 
+To enable measurement of phase synchronisation, data was filtered in to 9 narrow-band components. The centre frequency for the narrow-band components ranged from 10 to 90~Hz, in steps of 10~Hz, with a bandwidth of 20~Hz. This approach gives 9 measures of synchronisation, for each stimulation, for each channel pair.
+
+Following the preprocessing and filtering steps, the data was epoched about the time of stimulations. 
 \begin{figure}[htbp]
 	\centering
-		\includegraphics[scale=0.8]{./Figures/DifferentialMontage.pdf}
-	\caption{caption}
+		\includegraphics[scale=0.7]{./Figures/DifferentialMontage.pdf}
+	\caption{\textbf{Differential Montage.} Arrangement for re-referencing data to remove common-mode interference and the effect of the reference electrode.}
 	\label{fig:DifMontage}
 \end{figure}
 
+\subsubsection{Stimulation-Induced Interactions}
 Electric potential measured from iEEG has
-an oscillatory behavior. By assuming the oscillations are generated
+an oscillatory behaviour. By assuming the oscillations are generated
 by individual cortical columns, it is possible to study their
 interaction. As with many systems in nature, synchronisation
 phenomena can be observed. Abnormal levels of phase and frequency
@@ -161,14 +165,14 @@ data from two time series. This interaction is some kind of
 dependance of one system on the other.\\
 
 
-\subsection{Linear Cross-correlation}
+\subsection{Linear Cross-Correlation}
 This is the simplest measure of synchronisation, it is defined in
 the time domain as a function of the time lag $\tau$, where $\tau =
 -(N-1),...,0,...,N-1$ by
 \begin{equation}
-C_{XY}{\tau} = \begin{array}{l l}
+C_{XY}(\tau) = \left\{\begin{array}{l l}
   \frac{1}{N-\tau}\sum_{n=1}^{N-\tau}x_{n+\tau}y_n & \quad \tau \geq 0\\
-  C_{YX}(-\tau) & \quad \tau <0\\ \end{array}
+  C_{YX}(-\tau) & \quad \tau <0\\ \end{array} \right.
 \end{equation}
 
 A quantitative measure of this linear correlation is
