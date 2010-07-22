@@ -56,7 +56,7 @@
 \fi
 \title{Brain Stimulation Induced Interactions}
 \author{In no particular order: Dean R. Freestone, Tim S. Nelson, Alan Lai, Simon Vogrin,\\
- Michael Murphy?, David B. Grayden, Anthony N. Burkitt, Mark J. Cook}
+ Michael Murphy?, Wendyl D'Souza?, David B. Grayden, Anthony N. Burkitt, Mark J. Cook}
 
 \date{2010-07-13}
 
@@ -105,7 +105,7 @@ Kalitzin et al.~\cite{Kalitzin2005} derived the relative phase clustering index 
 
 \section{Method}
 \subsection{Data Acquisition and Stimulation Protocol}
-Data was collected from patients undergoing evaluation for the surgical resection of epileptic foci at St. Vincent's Public and Private Hospital's in Melbourne, Australia. Data was collected with informed consent under ethics approval from St. Vincent's Public and Private Human Research Ethics Committee (HREC-A 006/08).
+All data used in this study was collected from patients undergoing evaluation for the surgical resection of epileptic foci at St. Vincent's Public and Private Hospital's in Melbourne, Australia. Data was collected with informed consent under ethics approval from St. Vincent's Public and Private Human Research Ethics Committee (HREC-A 006/08).
 
 The standard clinical practice for epilepsy related surgery involves a diagnostic period of one week, where intracranial EEG electrodes are implanted directly on the surface of the brain. These electrodes are used to map pathological brain tissue by recording abnormal oscillations in the electrical fields of the brain during seizures. In addition the electrodes facilitate mapping of important functional brain tissue, such as speech and motor control, by applying electrical stimulation and observing the behavioural response.  
 
@@ -126,11 +126,12 @@ All data was collected via intracranial grid electrodes (Ad-Tech medical), which
 
 \subsection{Data Analysis}
 \subsubsection{Preprocessing and Epoching}
-The first pre-processing step was to identify channels that had very poor signal quality via visual inspection. Data from these channels were set to the $nan$ data type and excluded from further analysis. In the next step, the sample corresponding to the time of each stimuli was identified. Then \dean{3?} samples either side of this sample were removed from the time series, and reintroduced using linear interpolation. This removed the stimulus artifacts~\ref{Heffer2008}. The data was then re-referenced to a differential montage, to remove common-mode interference and the effect of the reference electrode. Only neighbouring pairs in the x-y direction of the electrode where both electrodes gave good signal quality where used. Following this, each electrode can be used to in a maximum of four possible combinations. Next, the data was smoothed using a $n^th$-order moving average filter. This step removed sharp fluctuations in the signal that lead to problems when applying digital filtering. Next, the data was low-pass filtered with a cut-off frequency of 100~Hz using a $n^{th}$-order zero-phase Butterworth filter. The data was then resampled from 5~kHz to 1~kHz for further processing.
+Preprocessing and signal conditioning is required to ensure that noise has a minimal effect of the stimulation-induced interaction analysis. The first pre-processing step was to identify channels that had very poor signal quality via visual inspection. Data from these channels were set to the $nan$ data type and excluded from further analysis. In the next step, the sample corresponding to the time of each stimuli was identified. Then \dean{3?} samples either side of this sample were removed from the time series, and reintroduced using linear interpolation. This removed the stimulus artifacts~\ref{Heffer2008}. The data was then re-referenced to a differential montage, to remove common-mode interference and the effect of the reference electrode. Only neighbouring pairs in the x-y direction of the electrode where both electrodes gave good signal quality where used. Following this, each electrode can be used to in a maximum of four possible combinations. Next, the data was smoothed using a $n^th$-order moving average filter. This step removed sharp fluctuations in the signal that lead to problems when digital filtering was applied. Next, the data was low-pass filtered with a cut-off frequency of 100~Hz using a $n^{th}$-order zero-phase Butterworth filter. The data was then resampled from 5~kHz to 1~kHz for further processing.
 
-To enable measurement of phase synchronisation, data was filtered in to 9 narrow-band components. The centre frequency for the narrow-band components ranged from 10 to 90~Hz, in steps of 10~Hz, with a bandwidth of 20~Hz. This approach gives 9 measures of phase synchronisation, for each stimulation, for each channel pair.
+To enable measurement of phase synchronisation, data must be filtered into narrow-band components~\cite{Rosenblum2004}. Therefore narrow-band components of the iEEG were extract through band-pass filtering. The centre frequency for the narrow-band components ranged from 10 to 90~Hz, in steps of 10~Hz, with a bandwidth of 20~Hz. This approach gives 9 measures of phase synchronisation, for each stimulation, for each channel pair.
 
-Following the preprocessing and filtering steps, the data was epoched about the time of stimulations. Time intervals from 10~ms to 110~ms post-stimulation were used for analysis. Each 100~ms epoch was visually inspected for artifact (from movement for example). Epochs with obvious artifacts were removed from further analysis. Stimulation groups where greater than 50~\% of the epochs had obvious artifacts were excluded in order to gain reliable statistics. This approach yielded at least 50 responses to stimulation, to create histograms of the interaction measures. A histogram was formed
+Following the preprocessing and filtering steps, the data was epoched about the time of stimulations. Time intervals from 10~ms to 110~ms post-stimulation were used for analysis. Each 100~ms epoch was visually inspected for artifact (from movement for example). Epochs with obvious artifacts were removed from further analysis. Stimulation groups where greater than 50~\% of the epochs had obvious artifacts were excluded in order to gain reliable statistics on interaction measures. This approach yielded at least 50 responses to stimulation, to create histograms of the interaction measures. A histogram was formed for each channel pair, for each stimulation group and each interaction measure. 
+
 \begin{figure}[htbp]
 	\centering
 		\includegraphics[scale=0.7]{./Figures/DifferentialMontage.pdf}
@@ -139,46 +140,21 @@ Following the preprocessing and filtering steps, the data was epoched about the 
 \end{figure}
 
 \subsubsection{Stimulation-Induced Interactions}
-Electric potential measured from iEEG has
-an oscillatory behaviour. By assuming the oscillations are generated
-by individual cortical columns, it is possible to study their
-interaction. As with many systems in nature, synchronisation
-phenomena can be observed. Abnormal levels of phase and frequency
-entrainment have been associated with different neurological
-disorders, particularly Parkinson's disease and epilepsy.
-Synchronisation also seems to be a central mechanism for neural
-information processing within a brain, as well as for communication
-between different brain areas~\cite{Rosenblum2001}. This concept
-was discussed earlier in reference to seizure prediction. Following
-the hypothesis that widespread neural interaction is required for
-information processing and executing tasks, it makes sense to
-quantifying the interactions for both epileptic seizure prediction
-and brain computer interfacing. Below a description of some methods
-used to observe these events is described.\\
 
-The measurement of synchrony in the brain is a non-trivial task.
-Intracranial EEG oscillations are irregular, noisy, non-stationary
-and at times chaotic. Therefore any synchrony can be masked. The
-problem can be stated as: we are trying to measure interaction
-between complex systems with an unknown underlying structure via
-data from two time series. This interaction is some kind of
-dependance of one system on the other.\\
+The oscillatory nature of the electric fields of the brain lends them naturally to synchronisation analysis to quantify interactions. Indeed synchronisation phenomena is important in normal and pathological brain dynamics.
 
+The two measures used in this study are the maximum cross-correlation and phase synchronisation. These methods both provide a scalar measure of the interaction strength between the neighbouring differential recording pairs for each of the single-pulse stimulations. 
 
 \subsection{Linear Cross-Correlation}
 This is the simplest measure of synchronisation, it is defined in
 the time domain as a function of the time lag $\tau$, where $\tau =
--(N-1),...,0,...,N-1$ by
+-(T-1),\hdots,0,\hdots,T-1$ by
 \begin{equation}
-C_{XY}(\tau) = \left\{\begin{array}{l l}
-  \frac{1}{N-\tau}\sum_{n=1}^{N-\tau}x_{n+\tau}y_n & \quad \tau \geq 0\\
-  C_{YX}(-\tau) & \quad \tau <0\\ \end{array} \right.
+	C_{\alpha,\beta}^{m,n} (\tau) = \frac{1}{T-1} \sum_t\frac{(\mathbf y_{\alpha,t+\tau}-\bar{\mathbf{y}}_{\alpha}) (\mathbf{y}_{\beta,t} - \bar{\mathbf{y}}_{\beta})}{\sigma_{\alpha}\sigma_{\beta}},
 \end{equation}
-
-A quantitative measure of this linear correlation is
-
+where $\alpha$ and $\beta$ index the differential iEEG time series, $m$ indexes the stimuli within a group, $n$ indexes the groups of stimuli, and $t$ indexes the discrete time samples. The symbol $\sigma$ denotes the standard deviation of the iEEG times for the relevant channel. A quantitative scalar measure of the correlation is
 \begin{equation}
-C_{max} = max\{|C_{XY}(\tau)|\}
+	M_{\alpha,\beta}^{m,n} = \max_\tau\left|C_{\alpha,\beta}^{m,n}(\tau)\right|
 \end{equation}
 
 This analysis method has the advantage of being very simple, but it
@@ -188,101 +164,38 @@ synchronisation.
 \subsection{Phase Synchronisation}
 
 When quantifying the synchronisation of phases of two times series,
-$x$ and $y$, we first need to find the instantaneous phases,
-$\phi_x(t)$ and $\phi_y(t)$. Phase locking is defined as
+$y_{\alpha,t}$ and $y_{\beta,t}$, we first need to find the instantaneous phases,
+$\phi_{\alpha,t}$ and $\phi_{\beta,t}$. For a narrow-band oscillatory time series, the instantaneous phase can be computed using the Hilbert transform such that
 \begin{equation}
-m\phi_x(t)-n\phi_y(t) = const
+	\phi_t = \arctan\left(\frac{\mathcal{H}y_t}{y_t}\right)
 \end{equation}
-
-Where $m$ and $n$ are integers~\cite{Huygens1673}. Phase
-entrainment is defined as
+where $\mathcal H$ denotes the Hilbert transform operator. The Hilbert transform can be considered a $\pi/2$ phase-shifter, where
+\begin{equation}\label{eq:HilbertTransform}
+\mathcal{H}y_t = p.v.\int\limits_{ - \infty }^\infty {y_{t'}h_{t-t'}} dt',
+\end{equation}
+and $p.v.$ denotes the Cauchy principle value integral and the Hilbert kernel is defined as
 \begin{equation}
-m\phi_x(t)-n\phi_y(t) < const
+	h_t=\frac{1}{\pi t}.
+\end{equation} 
+The instantaneous phase of a narrow-band signal can be uniquely defined if the conditions of the Bedrosian theorem~\cite{Bedrosian1963} are met such that
+\begin{equation}\label{eq:BedrosianCondition}
+\begin{array}{*{20}{c}}
+   {\mathcal{F}a_t = 0,} & {\,\left| \omega \right| > \omega_1,}  \\
+   {\mathcal{F}\left\{ {\cos\left(\phi \left( t \right)\right)} \right\} = 0,} & {\left| \omega \right| < \omega_2,}  \\
+\end{array}
 \end{equation}
-
+where $\mathcal{F}$ denotes the Fourier transform and $a_t$ denotes the instantaneous amplitude of $y_t$. Phase-locking is defined as
+\begin{equation}
+\gamma_1\phi_{\alpha,t}-\gamma_2\phi_{\beta,t} = const,
+\end{equation}
+where $\gamma_1$ and $\gamma_2$ are integers~\cite{Huygens1673}. Phase-entrainment is defined as
+\begin{equation}
+\gamma_1\phi_x(t)-\gamma_2\phi_y(t) < const.
+\end{equation}
 This definition is for the case of noisy and/or chaotic
-systems~\cite{Rosenblum1996} such as iEEG.\\
+systems~\cite{Rosenblum1996} such as iEEG. In this study, we shall only consider synchronisation across the same bands (defined by our filtering) such that $\gamma_1=\gamma_2=1$.
 
-There are multiple ways of extracting the instantaneous phase of a
-time series, here we discus two approaches: the analytic signal
-approach using the Hilbert transform (HT), and using the
-continuous wavelet transform (CWT).\\
-
-Using the analytic signal approach, the analytic signal is defined
-as
-\begin{equation}
-Z_x(t) = x(t) + i\tilde{x}(t) = A_x^H(t)e^{i\phi_x^H(t)}
-\end{equation}
-
-where $\tilde{x}(t)$ is the HT of $x(t)$ and
-
-\begin{equation}
-\tilde{x}(t) =
-\frac{1}{\pi}P.V.\int_{-\infty}^{+\infty}\frac{x(t')}{t-t'}dt'
-\end{equation}
-
-where $P.V.$ denotes the Cauchy principle value.
-
-The Hilbert transform can also be calculated using Fourier theory.
-\begin{equation}
-\tilde{x}(t) = -iFT^{-1}[FT[x(t)]sign(\omega)]
-\end{equation}
-
-This definition demonstrates that the transform gives a translation
-of the phase in the frequency domain by $\frac{\pi}{2}$, for all
-frequencies, whilst the power remains unchanged.\\
-
-The Hilbert phase is defined as
-\begin{equation}
-\phi_x^{H}(t) = \arctan\frac{\tilde{x}(t)}{x(t)}
-\label{instPhase}
-\end{equation}
-
-An alternate description of the instantaneous phase accounting for
-$2\pi$ phase jumps is shown below.
-
-\begin{equation}
-\beta_x^{H}(t) = \arctan\frac{\tilde{x}(t)}{x(t)}+2\pi l(t)
-\end{equation}
-
-where $\beta$ is the accumulated phase. The function $l(t)$ is
-incremented or decremented by one for each clockwise or
-counter-clockwise orbit of the reconstructed trajectory in the phase
-space or transition from $2\pi$ to $-2\pi$. For explanatory purposes
-the simpler equation described by equation~\ref{instPhase} will be
-used for future descriptions, and a statistical method will be used
-to find
-a measure of synchronization.\\
-
-This definition of the instantaneous phase only makes sense when
-there is a dominant peak in the power spectrum or when oscillations
-are extracted via bandpass
-filtering for the frequency of interest~\cite{Rosenblum2004}.\\
-
-By using the wavelet approach the frequency range of interest can be
-set without bandpass filtering. Below the complex Morlett wavelet is
-defined.
-\begin{equation}
-\psi(t) =
-(e^{i\omega_ct}-e^{\omega_c^2t\sigma^2/2})e^{-t^2/2\sigma^2}
-\end{equation}
-
-Convolution with time series yields wavelet coefficients
-\begin{equation}
-W_l(t) = (\psi\circ x)(t) = \int\psi(t')x(t-t')dt'
-\end{equation}
-
-Then the phase can be defined
-\begin{equation}
-\phi_x^W(t)=\arctan\frac{Im(W(t))}{Re(W(T))}
-\end{equation}
-
-As mentioned earlier, the $\pm2\pi$ phase jumps add further
-complexity to the measurement of phase difference between the
-signals. A common method for over coming this problem based on a
-statistical approach using the \emph{index based on circular
-variance} as defined below
-
+Given the instantaneous phase estimates, the phase synchronisation index is defined as
 \begin{equation}
 \gamma = |\frac{1}{N}\sum_{j=1}^N e^{i[n\phi_x(t)-m\phi_y(t)]}| =
 1-CV
@@ -290,12 +203,10 @@ variance} as defined below
 
 where $CV$ denotes the circular variance of an angular distribution,
 and $\gamma$ is also known as the phase locking value (PLV) or the
-mean phase coherence. The integers $n$ and $m$ allow comparison of
-different frequency, where $n:m$ is the ratio of the mean frequency
-of the observed times series. The values of $\gamma$ fall into the
+mean phase coherence. The values of $\gamma$ fall into the
 interval $[0,1]$, where values of zero indicate uncorrelated phase
 differences and a phase synchronisation of one shows perfect
-synchronisation. This measure is independent of amplitude.\\
+synchronisation. Unlike the cross-correlation analysis, this measure is independent of amplitude.\\
 
 %Because the phase distribution is non-uniform there will be an
 %over-estimation of phase synchronization. To account for the bias
