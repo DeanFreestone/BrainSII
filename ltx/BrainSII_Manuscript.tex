@@ -128,9 +128,9 @@ All data was collected via intracranial grid electrodes (Ad-Tech medical), which
 \subsubsection{Preprocessing and Epoching}
 Preprocessing and signal conditioning is required to ensure that noise has a minimal effect of the stimulation-induced interaction analysis. The first pre-processing step was to identify channels that had very poor signal quality via visual inspection. Data from these channels were set to the $nan$ data type and excluded from further analysis. In the next step, the sample corresponding to the time of each stimuli was identified. Then \dean{3?} samples either side of this sample were removed from the time series, and reintroduced using linear interpolation. This removed the stimulus artifacts~\ref{Heffer2008}. The data was then re-referenced to a differential montage, to remove common-mode interference and the effect of the reference electrode. Only neighbouring pairs in the x-y direction of the electrode where both electrodes gave good signal quality where used. Following this, each electrode can be used to in a maximum of four possible combinations. Next, the data was smoothed using a $n^th$-order moving average filter. This step removed sharp fluctuations in the signal that lead to problems when digital filtering was applied. Next, the data was low-pass filtered with a cut-off frequency of 100~Hz using a $n^{th}$-order zero-phase Butterworth filter. The data was then resampled from 5~kHz to 1~kHz for further processing.
 
-To enable measurement of phase synchronisation, data must be filtered into narrow-band components~\cite{Rosenblum2004}. Therefore narrow-band components of the iEEG were extract through band-pass filtering. The centre frequency for the narrow-band components ranged from 10 to 90~Hz, in steps of 10~Hz, with a bandwidth of 20~Hz. This approach gives 9 measures of phase synchronisation, for each stimulation, for each channel pair.
+To enable measurement of phase synchronisation, data must be filtered into narrow-band components~\cite{Rosenblum2004}. Accordingly, narrow-band components of the iEEG were extracted through band-pass filtering. The centre frequency for the narrow-band components ranged from 10 to 90~Hz, in steps of 10~Hz, with a bandwidth of 20~Hz. This approach allows for 9 measures of phase synchronisation, for each stimulation, for each channel pair.
 
-Following the preprocessing and filtering steps, the data was epoched about the time of stimulations. Time intervals from 10~ms to 110~ms post-stimulation were used for analysis. Each 100~ms epoch was visually inspected for artifact (from movement for example). Epochs with obvious artifacts were removed from further analysis. Stimulation groups where greater than 50~\% of the epochs had obvious artifacts were excluded in order to gain reliable statistics on interaction measures. This approach yielded at least 50 responses to stimulation, to create histograms of the interaction measures. A histogram was formed for each channel pair, for each stimulation group and each interaction measure. 
+Following the preprocessing and filtering steps, the data was epoched about the time of stimulations. Stimuli within a group of 100 shall be indexed by $n$ and stimulation groups shall be indexed by $m$. Time intervals from 10~ms to 110~ms post-stimulation were used for analysis. Each 100~ms epoch was visually inspected for artifact (from movement for example). Epochs with obvious artifacts were removed from further analysis. Stimulation groups where greater than 50~\% of the epochs had obvious artifacts were excluded in order to gain reliable statistics from the interaction measures. This approach yielded at least 50 responses to stimulation, to create histograms of the interaction measures. A histogram was formed for each channel pair, for each stimulation group, $m$, and each interaction measure. 
 
 \begin{figure}[htbp]
 	\centering
@@ -141,7 +141,7 @@ Following the preprocessing and filtering steps, the data was epoched about the 
 
 \subsubsection{Stimulation-Induced Interactions}
 
-The oscillatory nature of the electric fields of the brain lends them naturally to synchronisation analysis to quantify interactions. Indeed synchronisation phenomena is important in normal and pathological brain dynamics.
+The oscillatory nature of the electric fields of the brain lends them naturally to synchronisation analysis to quantify interactions. Indeed, synchronisation phenomena is important in normal and pathological brain dynamics.
 
 The two measures used in this study are the maximum cross-correlation and phase synchronisation. These methods both provide a scalar measure of the interaction strength between the neighbouring differential recording pairs for each of the single-pulse stimulations. 
 
@@ -150,11 +150,11 @@ This is the simplest measure of synchronisation, it is defined in
 the time domain as a function of the time lag $\tau$, where $\tau =
 -(T-1),\hdots,0,\hdots,T-1$ by
 \begin{equation}
-	C_{\alpha,\beta}^{m,n} (\tau) = \frac{1}{T-1} \sum_t\frac{(\mathbf y_{\alpha,t+\tau}-\bar{\mathbf{y}}_{\alpha}) (\mathbf{y}_{\beta,t} - \bar{\mathbf{y}}_{\beta})}{\sigma_{\alpha}\sigma_{\beta}},
+	C_{\alpha,\beta}\left(\tau\right) = \frac{1}{T-1} \sum_t\frac{( y_{\alpha,t+\tau}-\bar{y}_{\alpha}) (y_{\beta,t} - \bar{y}_{\beta})}{\sigma_{\alpha}\sigma_{\beta}},
 \end{equation}
-where $\alpha$ and $\beta$ index the differential iEEG time series, $m$ indexes the stimuli within a group, $n$ indexes the groups of stimuli, and $t$ indexes the discrete time samples. The symbol $\sigma$ denotes the standard deviation of the iEEG times for the relevant channel. A quantitative scalar measure of the correlation is
+where $\alpha$ and $\beta$ index the differential iEEG time series, $t$ indexes the discrete time samples in the range of $t=1,2,\hdots,T$. Since the data is epoched into segments of 100~ms with a decimated sampling rate of 1~kHz, the value $T=100$. The symbol $\sigma$ denotes the standard deviation of the iEEG times for the relevant channel. A quantitative scalar measure of the correlation between the iEEG time series is
 \begin{equation}
-	M_{\alpha,\beta}^{m,n} = \max_\tau\left|C_{\alpha,\beta}^{m,n}(\tau)\right|
+	M_{\alpha,\beta} = \max_\tau\left|C_{\alpha,\beta}(\tau)\right|
 \end{equation}
 
 This analysis method has the advantage of being very simple, but it
@@ -196,16 +196,15 @@ This definition is for the case of noisy and/or chaotic
 systems~\cite{Rosenblum1996} such as iEEG. In this study, we shall only consider synchronisation across the same bands (defined by our filtering) such that $\gamma_1=\gamma_2=1$.
 
 Given the instantaneous phase estimates, the phase synchronisation index is defined as
-\begin{equation}
-\gamma = |\frac{1}{N}\sum_{j=1}^N e^{i[n\phi_x(t)-m\phi_y(t)]}| =
-1-CV
-\end{equation}
-
+\begin{align}
+\zeta_{\alpha,\beta} &= \left|\frac{1}{T}\sum_{t=1}^T e^{i[\phi_{\alpha,t}-\phi_{\beta,t}]}\right| \\
+ &=1-CV
+\end{align}
 where $CV$ denotes the circular variance of an angular distribution,
-and $\gamma$ is also known as the phase locking value (PLV) or the
-mean phase coherence. The values of $\gamma$ fall into the
+and $\zeta$ is known as the phase-locking value (PLV) or
+mean phase coherence. The values of $\zeta$ fall into the
 interval $[0,1]$, where values of zero indicate uncorrelated phase
-differences and a phase synchronisation of one shows perfect
+differences and a value of one indicates perfect
 synchronisation. Unlike the cross-correlation analysis, this measure is independent of amplitude.\\
 
 %Because the phase distribution is non-uniform there will be an
