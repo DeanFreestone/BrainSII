@@ -36,9 +36,9 @@ DataEpocher_fig = figure('Name','Probe Epoch',...
 
 Top = 0.9;
 LeftControls = 0.8;
-RightControls = 0.001;
+% RightControls = 0.001;
 WidthControl = 0.17;
-HeightControl = 0.025;      % starting top
+HeightControl = 0.027;      % starting top
 
 % this is the plot area
 Bottom = 0.02;
@@ -151,7 +151,7 @@ uicontrol('style','text', ...
     'backgroundcolor',ControlColor);
 
 Top = Top-1*HeightControl;
-Offset = 0.5;
+Offset = 0.5;                                           % initialise the offset
 OffsetEntry = uicontrol('style','edit', ...
     'BackgroundColor', 'white', ...
     'units', 'normalized',...
@@ -171,7 +171,7 @@ uicontrol('style','text', ...
     'backgroundcolor',ControlColor);
 
 Top = Top-1*HeightControl;
-MaxPlotChannel = 32;
+MaxPlotChannel = 32;                                % initialize the number of channels to plot
 MaxPlotChEdit = uicontrol('style','edit', ...
     'BackgroundColor', 'white', ...
     'units', 'normalized',...
@@ -289,6 +289,26 @@ for nn=1:MaximumPossibleNChannels
     end
 end
 
+Top = Top-2*HeightControl;
+uicontrol('style','text', ...
+    'units', 'normalized', ...
+    'position', [LeftControls Top WidthControl HeightControl], ...
+    'HorizontalAlignment','center', ...
+    'parent', DataEpocher_fig, ...
+    'string', 'samples about stimulation',...
+    'backgroundcolor',ControlColor);
+
+Top = Top-1*HeightControl;
+SamplesAboutStim = 6;                   % the number of samples to remove centerer at the stimulation
+SamplesAboutStimEdit = uicontrol('style','edit', ...
+    'BackgroundColor', 'white', ...
+    'units', 'normalized',...
+    'position', [LeftControls Top WidthControl HeightControl], ...
+    'HorizontalAlignment','center', ...
+    'parent', DataEpocher_fig, ...
+    'string',num2str(SamplesAboutStim),...
+    'callback',@SetSamplesAboutStim);
+
 % ~~~~~~~~~~~~~~~~~~    
 % here are the callback functions
 % ~~~~~~~~~~~~~~~~~~
@@ -367,11 +387,18 @@ end
         OffsetData = ZeroMeanRawData+OffsetMatrix;
         % plot it
         plot(OffsetData(:,~NoiseyChIndex(1:NPlotChannels)),'k','parent',Ax), hold(Ax,'on')
-        plot(OffsetData(:,logical(NoiseyChIndex(1:NPlotChannels))),'r','parent',Ax), hold(Ax,'off')
+        plot(OffsetData(:,logical(NoiseyChIndex(1:NPlotChannels))),'k','parent',Ax), hold(Ax,'off')
 
         axis off
-        ylim([-2*Offset Offset*(NPlotChannels+1)])
+        yMin = -2*Offset;
+        yMax = Offset*(NPlotChannels+1);
+        ylim([yMin yMax])
         
+        % draw a patch around the stimulation artifact
+        xPatchStart = StartTime*Fs+4 - floor(SamplesAboutStim/2);
+        xPatchEnd = StartTime*Fs+4 + floor(SamplesAboutStim/2);
+        patch([xPatchStart xPatchEnd xPatchEnd xPatchStart xPatchStart],[yMin yMin yMax yMax yMin],...
+            'g','facealpha',0.5,'edgecolor','none')
     end
 
     function TickBoxFunction(varargin)
@@ -417,5 +444,11 @@ end
             end
         end
         PlotData()
+    end
+
+    function SetSamplesAboutStim(varargin)
+        SamplesAboutStim = str2double(get(SamplesAboutStimEdit,'string'));
+        PlotData()
+        
     end
 end
