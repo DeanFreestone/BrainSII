@@ -463,100 +463,105 @@ uicontrol('style','togglebutton', ...
     function Rereference(varargin)
         
         ElectrodeRows = 3;
-        ElectrodeCols = 3;
+        ElectrodeCols = 4;
         ElectrodeComboIndex = 1;                    % this index the list of good electrode combos
         AllElectrodes = 1:MaxPlotChannel; 
         GoodElectrodeCombos = {'0'};
         NoisyElectrodes = AllElectrodes(logical(NoiseyChIndex));
         for n=1:ElectrodeRows*ElectrodeCols
             
-            for m=1:4
-                
-                % find the differential montage in a clock-wise fashion
-                % from the right to bottom to left to top.
-                
-                % need to know if there is an electrode to the right
-                % or if n is a multiple of ElectrodeCols
-                
-                if m==1                                                 % electrode to the right
-                    SecondElectrode = n+1;
-                    % check if it is a good electrode
-                    if ~ismember(SecondElectrode,NoisyElectrodes)
-                        % check if we are on the left of the grid
-                        if mod(n,ElectrodeCols)                         % this is zero if we are at the end of a row
-                    
-                            % check if electrode combo has been used
-                            ElectrodeCombo = [num2str(n) '-' num2str(SecondElectrode)];
-                            FlippedElectrodeCombo = fliplr(ElectrodeCombo);
+            if ~ismember(n,NoisyElectrodes)
+                for m=1:4
 
-                            if (sum(strcmp(GoodElectrodeCombos,ElectrodeCombo)) == 0) ...
-                                    && (sum(strcmp(GoodElectrodeCombos,FlippedElectrodeCombo)) == 0)
+                    % find the differential montage in a clock-wise fashion
+                    % from the right to bottom to left to top.
 
-                                % than we can use it
-                                GoodElectrodeCombos{ElectrodeComboIndex} = [num2str(n) '-' num2str(SecondElectrode)];
-                                ElectrodeComboIndex = ElectrodeComboIndex+1;
+                    % need to know if there is an electrode to the right
+                    % or if n is a multiple of ElectrodeCols
+
+                    if m==1                                                 % electrode to the right
+                        SecondElectrode = n+1;
+                        % check if it is a good electrode
+                        if ~ismember(SecondElectrode,NoisyElectrodes)
+                            % check if we are on the left of the grid
+                            if mod(n,ElectrodeCols)                         % this is zero if we are at the end of a row
+
+                                % check if electrode combo has been used
+                                ElectrodeCombo = [num2str(n) '-' num2str(SecondElectrode)];
+                                FlippedElectrodeCombo = [num2str(SecondElectrode) '-' num2str(n)];
+
+                                if (sum(strcmp(GoodElectrodeCombos,ElectrodeCombo)) == 0) ...
+                                        && (sum(strcmp(GoodElectrodeCombos,FlippedElectrodeCombo)) == 0)
+
+                                    % than we can use it
+                                    GoodElectrodeCombos{ElectrodeComboIndex} = [num2str(n) '-' num2str(SecondElectrode)];
+                                    
+                                    
+                                    
+                                    ElectrodeComboIndex = ElectrodeComboIndex+1;
+                                end
                             end
                         end
-                    end
-                    
-                elseif m ==2                                        % electrode below
-                    SecondElectrode = n+ElectrodeCols;
-                    % check if it is a good electrode
-                    if ~ismember(SecondElectrode,NoisyElectrodes)
-                        % check if we are on the bottom of the grid
-                        if n<=(ElectrodeRows-1)*ElectrodeCols                         % this is zero if we are at the bottom row
-                    
-                            % check if electrode combo has been used
-                            ElectrodeCombo = [num2str(n) '-' num2str(SecondElectrode)];
-                            FlippedElectrodeCombo = fliplr(ElectrodeCombo);
 
-                            if (sum(strcmp(GoodElectrodeCombos,ElectrodeCombo)) == 0) ...
-                                    && (sum(strcmp(GoodElectrodeCombos,FlippedElectrodeCombo)) == 0)
+                    elseif m ==2                                        % electrode below
+                        SecondElectrode = n+ElectrodeCols;
+                        % check if it is a good electrode
+                        if ~ismember(SecondElectrode,NoisyElectrodes)
+                            % check if we are on the bottom of the grid
+                            if n<=(ElectrodeRows-1)*ElectrodeCols                         % this is zero if we are at the bottom row
 
-                                % than we can use it
-                                GoodElectrodeCombos{ElectrodeComboIndex} = [num2str(n) '-' num2str(SecondElectrode)];
-                                ElectrodeComboIndex = ElectrodeComboIndex+1;
+                                % check if electrode combo has been used
+                                ElectrodeCombo = [num2str(n) '-' num2str(SecondElectrode)];
+                                FlippedElectrodeCombo = [num2str(SecondElectrode) '-' num2str(n)];
+
+                                if (sum(strcmp(GoodElectrodeCombos,ElectrodeCombo)) == 0) ...
+                                        && (sum(strcmp(GoodElectrodeCombos,FlippedElectrodeCombo)) == 0)
+
+                                    % than we can use it
+                                    GoodElectrodeCombos{ElectrodeComboIndex} = [num2str(n) '-' num2str(SecondElectrode)];
+                                    ElectrodeComboIndex = ElectrodeComboIndex+1;
+                                end
+                            end
+                        end      
+
+                    elseif m ==3                                        % electrode left
+                        SecondElectrode = n-1;
+                        % check if it is a good electrode
+                        if ~ismember(SecondElectrode,NoisyElectrodes)
+                            % check if we are on the left of the grid
+                            if mod(n-1,ElectrodeCols)                         % this is zero if we are at the bottom row
+
+                                % check if electrode combo has been used
+                                ElectrodeCombo = [num2str(n) '-' num2str(SecondElectrode)];
+                                FlippedElectrodeCombo = [num2str(SecondElectrode) '-' num2str(n)];
+
+                                if (sum(strcmp(GoodElectrodeCombos,ElectrodeCombo)) == 0) ...
+                                        && (sum(strcmp(GoodElectrodeCombos,FlippedElectrodeCombo)) == 0)
+
+                                    % than we can use it
+                                    GoodElectrodeCombos{ElectrodeComboIndex} = [num2str(n) '-' num2str(SecondElectrode)];
+                                    ElectrodeComboIndex = ElectrodeComboIndex+1;
+                                end
                             end
                         end
-                    end      
-                    
-                elseif m ==3                                        % electrode left
-                    SecondElectrode = n-1;
-                    % check if it is a good electrode
-                    if ~ismember(SecondElectrode,NoisyElectrodes)
-                        % check if we are on the left of the grid
-                        if mod(n-1,ElectrodeCols)                         % this is zero if we are at the bottom row
-                    
-                            % check if electrode combo has been used
-                            ElectrodeCombo = [num2str(n) '-' num2str(SecondElectrode)];
-                            FlippedElectrodeCombo = fliplr(ElectrodeCombo);
+                    elseif m == 4                                        % electrode above
+                        SecondElectrode = n-ElectrodeCols;
+                        % check if it is a good electrode
+                        if ~ismember(SecondElectrode,NoisyElectrodes)
+                            % check if we are on the left of the grid
+                            if n>ElectrodeCols                         % this is zero if we are at the bottom row
 
-                            if (sum(strcmp(GoodElectrodeCombos,ElectrodeCombo)) == 0) ...
-                                    && (sum(strcmp(GoodElectrodeCombos,FlippedElectrodeCombo)) == 0)
+                                % check if electrode combo has been used
+                                ElectrodeCombo = [num2str(n) '-' num2str(SecondElectrode)];
+                                FlippedElectrodeCombo = [num2str(SecondElectrode) '-' num2str(n)];
 
-                                % than we can use it
-                                GoodElectrodeCombos{ElectrodeComboIndex} = [num2str(n) '-' num2str(SecondElectrode)];
-                                ElectrodeComboIndex = ElectrodeComboIndex+1;
-                            end
-                        end
-                    end
-                elseif m == 4                                        % electrode above
-                    SecondElectrode = n-ElectrodeRows;
-                    % check if it is a good electrode
-                    if ~ismember(SecondElectrode,NoisyElectrodes)
-                        % check if we are on the left of the grid
-                        if n>ElectrodeCols                         % this is zero if we are at the bottom row
-                    
-                            % check if electrode combo has been used
-                            ElectrodeCombo = [num2str(n) '-' num2str(SecondElectrode)];
-                            FlippedElectrodeCombo = fliplr(ElectrodeCombo);
+                                if (sum(strcmp(GoodElectrodeCombos,ElectrodeCombo)) == 0) ...
+                                        && (sum(strcmp(GoodElectrodeCombos,FlippedElectrodeCombo)) == 0)
 
-                            if (sum(strcmp(GoodElectrodeCombos,ElectrodeCombo)) == 0) ...
-                                    && (sum(strcmp(GoodElectrodeCombos,FlippedElectrodeCombo)) == 0)
-
-                                % than we can use it
-                                GoodElectrodeCombos{ElectrodeComboIndex} = [num2str(n) '-' num2str(SecondElectrode)];
-                                ElectrodeComboIndex = ElectrodeComboIndex+1;
+                                    % than we can use it
+                                    GoodElectrodeCombos{ElectrodeComboIndex} = [num2str(n) '-' num2str(SecondElectrode)];
+                                    ElectrodeComboIndex = ElectrodeComboIndex+1;
+                                end
                             end
                         end
                     end
