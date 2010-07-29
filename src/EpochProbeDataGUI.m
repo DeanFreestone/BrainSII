@@ -151,7 +151,7 @@ uicontrol('style','text', ...
     'backgroundcolor',ControlColor);
 
 Top = Top-1*HeightControl;
-Offset = 1;
+Offset = 0.5;
 OffsetEntry = uicontrol('style','edit', ...
     'BackgroundColor', 'white', ...
     'units', 'normalized',...
@@ -260,11 +260,13 @@ uicontrol('style','pushbutton', ...
 
 % use a tick box to identify bad channels
 MaximumPossibleNChannels = 128;
+NoiseyChTickBox = zeros(1,MaximumPossibleNChannels);
+NoiseyChIndex = zeros(1,MaximumPossibleNChannels);
 TickOffset = 2*Height/(4+MaxPlotChannel-1);
 TickBoxesLeft = Left - 0.05;
 TickBoxWidth = 0.1;
 TickBoxHeight = HeightControl;
-HeightOfTickBoxes = [linspace(Bottom+TickOffset,Bottom+Height-TickOffset,NChannels)-TickBoxHeight/2 -1*ones(1,MaximumPossibleNChannels-MaxPlotChannel)];
+HeightOfTickBoxes = [linspace(Bottom+TickOffset,Bottom+Height-TickOffset,MaxPlotChannel)-TickBoxHeight/2 -1*ones(1,MaximumPossibleNChannels-MaxPlotChannel)];
 
 for nn=1:MaximumPossibleNChannels
     if nn <= MaxPlotChannel
@@ -273,7 +275,7 @@ for nn=1:MaximumPossibleNChannels
             'position', [TickBoxesLeft HeightOfTickBoxes(nn) TickBoxWidth TickBoxHeight], ...
             'HorizontalAlignment','center', ...
             'parent', DataEpocher_fig, ...
-            'string', ['Ch' num2str(MaxPlotChannel-nn+1)],...
+            'string', ['Ch' num2str(nn)],...
             'callback',@TickBoxFunction);
     else
         NoiseyChTickBox(nn) = uicontrol('style','checkbox',...
@@ -281,16 +283,18 @@ for nn=1:MaximumPossibleNChannels
             'position', [TickBoxesLeft HeightOfTickBoxes(nn) TickBoxWidth TickBoxHeight], ...
             'HorizontalAlignment','center', ...
             'parent', DataEpocher_fig, ...
-            'string', ['Ch' num2str(NChannels-nn+1)],...
+            'string', ['Ch' num2str(nn)],...
             'visible','off',...
             'callback',@TickBoxFunction);
     end
 end
-    
 
+% ~~~~~~~~~~~~~~~~~~    
+% here are the callback functions
+% ~~~~~~~~~~~~~~~~~~
 
     function GetDataFile(varargin)
-        [dat_filename dat_pathname] = uigetfile(dat_pathname,'*.dat');
+        [dat_filename dat_pathname] = uigetfile('*.dat','Pick a data (.dat) file',dat_pathname);
         dat_FileAndPath = [dat_pathname '/' dat_filename];
         set(TextBox_dat_filename,'string',dat_filename)
         files = dir(dat_pathname);
@@ -305,7 +309,7 @@ end
     end
 
     function GetMatFile(varargin)
-        [mat_filename mat_pathname] = uigetfile(dat_pathname,'*.mat');
+        [mat_filename mat_pathname] = uigetfile('*.mat','Pick the .mat file',dat_pathname);
         mat_FileAndPath = [mat_pathname '/' mat_filename];
         set(TextBox_mat_filename,'string',mat_filename)
         ProbeInfo = load(mat_FileAndPath);
@@ -339,30 +343,44 @@ end
 
     function SetOffset(varargin)
         Offset = str2double(get(OffsetEntry,'string'));
+        PlotData()
     end
 
     function PlotData(varargin)
         
+        % get the number of channels to plot
         MaxPlotChannel = str2double(get(MaxPlotChEdit,'string'));
         PlotChannels = 1:MaxPlotChannel;
         NPlotChannels = length(PlotChannels);
         
+        % create the offset
         NSamples4Plot = (EndTime+StartTime)*Fs;
         OffsetVector = 0:Offset:Offset*(NPlotChannels-1);
         OffsetMatrix = repmat(OffsetVector,NSamples4Plot,1);
-        temp = RawData(floor(RelativeStimTimes(StimNumber)*Fs-(StartTime*Fs-1):(RelativeStimTimes(StimNumber)+EndTime)*Fs),PlotChannels);
-        ZeroMeanRawData = temp-repmat(mean(temp,1),NSamples4Plot,1);       % make data zero mean
         
-        plot(ZeroMeanRawData+OffsetMatrix,'parent',Ax)
+        % take data window
+        temp = RawData(floor(RelativeStimTimes(StimNumber)*Fs-(StartTime*Fs-1):(RelativeStimTimes(StimNumber)+EndTime)*Fs),PlotChannels);
+        
+        % demean data
+        ZeroMeanRawData = temp - repmat(mean(temp,1),NSamples4Plot,1);       % make data zero mean
+        
+        OffsetData = ZeroMeanRawData+OffsetMatrix;
+        % plot it
+        plot(OffsetData(:,~NoiseyChIndex(1:NPlotChannels)),'k','parent',Ax), hold(Ax,'on')
+        plot(OffsetData(:,logical(NoiseyChIndex(1:NPlotChannels))),'r','parent',Ax), hold(Ax,'off')
+
         axis off
         ylim([-2*Offset Offset*(NPlotChannels+1)])
+        
     end
 
     function TickBoxFunction(varargin)
-        for n=1:NChannels
+        for n=1:MaximumPossibleNChannels
+            NoiseyChIndex(n) = get(NoiseyChTickBox(n),'value');
             % find out if channels is noisey
             % get the value of all the tick boxes
         end
+        PlotData()
     end
 
     function StimBackward(varargin)
@@ -380,6 +398,24 @@ end
     end
 
     function SetMaxPlotCh(varargin)
+        MaxPlotChannel = str2double(get(MaxPlotChEdit,'string'));
+        
+        % now need to adjust the tick boxes
+        TickOffset = 2*Height/(4+MaxPlotChannel-1);
+
+        HeightOfTickBoxes = [linspace(Bottom+TickOffset,Bottom+Height-TickOffset,MaxPlotChannel)-TickBoxHeight/2 -1*ones(1,MaximumPossibleNChannels-MaxPlotChannel)];
+
+        for n=1:MaximumPossibleNChannels
+            if n <= MaxPlotChannel
+                
+                set(NoiseyChTickBox(n),'position', [TickBoxesLeft HeightOfTickBoxes(n) TickBoxWidth TickBoxHeight], ...
+                    'string', ['Ch' num2str(n)],...
+                    'visible','on')
+            else
+                set(NoiseyChTickBox(n),...
+                    'visible','off')
+            end
+        end
         PlotData()
     end
 end
