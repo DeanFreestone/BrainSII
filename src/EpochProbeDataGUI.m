@@ -309,6 +309,15 @@ SamplesAboutStimEdit = uicontrol('style','edit', ...
     'string',num2str(SamplesAboutStim),...
     'callback',@SetSamplesAboutStim);
 
+% move to differential reference
+Top = Top-2*HeightControl;
+uicontrol('style','togglebutton', ...
+    'units', 'normalized', ...
+    'position', [LeftControls Top WidthControl HeightControl], ...
+    'HorizontalAlignment','center', ...
+    'parent', DataEpocher_fig, ...
+    'string', 're-reference',...
+    'callback',@Rereference);
 % ~~~~~~~~~~~~~~~~~~    
 % here are the callback functions
 % ~~~~~~~~~~~~~~~~~~
@@ -349,8 +358,8 @@ SamplesAboutStimEdit = uicontrol('style','edit', ...
         set(NSamplesText,'string',['NSamples = ' num2str(NSamples)])
         DataStatusMessage = 'data loaded';
         set(DataStatusText,'string',DataStatusMessage)
-        disp('writing data')
-        assignin('base','RawData',RawData)
+%         disp('writing data')
+%         assignin('base','RawData',RawData)
     end
 
     function SetEndTime(varargin)
@@ -369,7 +378,6 @@ SamplesAboutStimEdit = uicontrol('style','edit', ...
     function PlotData(varargin)
         
         % get the number of channels to plot
-        MaxPlotChannel = str2double(get(MaxPlotChEdit,'string'));
         PlotChannels = 1:MaxPlotChannel;
         NPlotChannels = length(PlotChannels);
         
@@ -387,7 +395,7 @@ SamplesAboutStimEdit = uicontrol('style','edit', ...
         OffsetData = ZeroMeanRawData+OffsetMatrix;
         % plot it
         plot(OffsetData(:,~NoiseyChIndex(1:NPlotChannels)),'k','parent',Ax), hold(Ax,'on')
-        plot(OffsetData(:,logical(NoiseyChIndex(1:NPlotChannels))),'k','parent',Ax), hold(Ax,'off')
+        plot(OffsetData(:,logical(NoiseyChIndex(1:NPlotChannels))),'r','parent',Ax), hold(Ax,'off')
 
         axis off
         yMin = -2*Offset;
@@ -395,8 +403,8 @@ SamplesAboutStimEdit = uicontrol('style','edit', ...
         ylim([yMin yMax])
         
         % draw a patch around the stimulation artifact
-        xPatchStart = StartTime*Fs+4 - floor(SamplesAboutStim/2);
-        xPatchEnd = StartTime*Fs+4 + floor(SamplesAboutStim/2);
+        xPatchStart = StartTime*Fs+3;
+        xPatchEnd = StartTime*Fs+4 + SamplesAboutStim;
         patch([xPatchStart xPatchEnd xPatchEnd xPatchStart xPatchStart],[yMin yMin yMax yMax yMin],...
             'g','facealpha',0.5,'edgecolor','none')
     end
@@ -450,5 +458,110 @@ SamplesAboutStimEdit = uicontrol('style','edit', ...
         SamplesAboutStim = str2double(get(SamplesAboutStimEdit,'string'));
         PlotData()
         
+    end
+
+    function Rereference(varargin)
+        
+        ElectrodeRows = 3;
+        ElectrodeCols = 3;
+        ElectrodeComboIndex = 1;                    % this index the list of good electrode combos
+        AllElectrodes = 1:MaxPlotChannel; 
+        GoodElectrodeCombos = {'0'};
+        NoisyElectrodes = AllElectrodes(logical(NoiseyChIndex));
+        for n=1:ElectrodeRows*ElectrodeCols
+            
+            for m=1:4
+                
+                % find the differential montage in a clock-wise fashion
+                % from the right to bottom to left to top.
+                
+                % need to know if there is an electrode to the right
+                % or if n is a multiple of ElectrodeCols
+                
+                if m==1                                                 % electrode to the right
+                    SecondElectrode = n+1;
+                    % check if it is a good electrode
+                    if ~ismember(SecondElectrode,NoisyElectrodes)
+                        % check if we are on the left of the grid
+                        if mod(n,ElectrodeCols)                         % this is zero if we are at the end of a row
+                    
+                            % check if electrode combo has been used
+                            ElectrodeCombo = [num2str(n) '-' num2str(SecondElectrode)];
+                            FlippedElectrodeCombo = fliplr(ElectrodeCombo);
+
+                            if (sum(strcmp(GoodElectrodeCombos,ElectrodeCombo)) == 0) ...
+                                    && (sum(strcmp(GoodElectrodeCombos,FlippedElectrodeCombo)) == 0)
+
+                                % than we can use it
+                                GoodElectrodeCombos{ElectrodeComboIndex} = [num2str(n) '-' num2str(SecondElectrode)];
+                                ElectrodeComboIndex = ElectrodeComboIndex+1;
+                            end
+                        end
+                    end
+                    
+                elseif m ==2                                        % electrode below
+                    SecondElectrode = n+ElectrodeCols;
+                    % check if it is a good electrode
+                    if ~ismember(SecondElectrode,NoisyElectrodes)
+                        % check if we are on the bottom of the grid
+                        if n<=(ElectrodeRows-1)*ElectrodeCols                         % this is zero if we are at the bottom row
+                    
+                            % check if electrode combo has been used
+                            ElectrodeCombo = [num2str(n) '-' num2str(SecondElectrode)];
+                            FlippedElectrodeCombo = fliplr(ElectrodeCombo);
+
+                            if (sum(strcmp(GoodElectrodeCombos,ElectrodeCombo)) == 0) ...
+                                    && (sum(strcmp(GoodElectrodeCombos,FlippedElectrodeCombo)) == 0)
+
+                                % than we can use it
+                                GoodElectrodeCombos{ElectrodeComboIndex} = [num2str(n) '-' num2str(SecondElectrode)];
+                                ElectrodeComboIndex = ElectrodeComboIndex+1;
+                            end
+                        end
+                    end      
+                    
+                elseif m ==3                                        % electrode left
+                    SecondElectrode = n-1;
+                    % check if it is a good electrode
+                    if ~ismember(SecondElectrode,NoisyElectrodes)
+                        % check if we are on the left of the grid
+                        if mod(n-1,ElectrodeCols)                         % this is zero if we are at the bottom row
+                    
+                            % check if electrode combo has been used
+                            ElectrodeCombo = [num2str(n) '-' num2str(SecondElectrode)];
+                            FlippedElectrodeCombo = fliplr(ElectrodeCombo);
+
+                            if (sum(strcmp(GoodElectrodeCombos,ElectrodeCombo)) == 0) ...
+                                    && (sum(strcmp(GoodElectrodeCombos,FlippedElectrodeCombo)) == 0)
+
+                                % than we can use it
+                                GoodElectrodeCombos{ElectrodeComboIndex} = [num2str(n) '-' num2str(SecondElectrode)];
+                                ElectrodeComboIndex = ElectrodeComboIndex+1;
+                            end
+                        end
+                    end
+                elseif m == 4                                        % electrode above
+                    SecondElectrode = n-ElectrodeRows;
+                    % check if it is a good electrode
+                    if ~ismember(SecondElectrode,NoisyElectrodes)
+                        % check if we are on the left of the grid
+                        if n>ElectrodeCols                         % this is zero if we are at the bottom row
+                    
+                            % check if electrode combo has been used
+                            ElectrodeCombo = [num2str(n) '-' num2str(SecondElectrode)];
+                            FlippedElectrodeCombo = fliplr(ElectrodeCombo);
+
+                            if (sum(strcmp(GoodElectrodeCombos,ElectrodeCombo)) == 0) ...
+                                    && (sum(strcmp(GoodElectrodeCombos,FlippedElectrodeCombo)) == 0)
+
+                                % than we can use it
+                                GoodElectrodeCombos{ElectrodeComboIndex} = [num2str(n) '-' num2str(SecondElectrode)];
+                                ElectrodeComboIndex = ElectrodeComboIndex+1;
+                            end
+                        end
+                    end
+                end
+            end
+        end
     end
 end
