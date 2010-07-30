@@ -5,8 +5,9 @@
 
 % to do list
 % ~~~~~
-% adjust tick box and position for different channel numbers
-% create a vector indicating good or bad epochs
+% 29/07 need to pre-define the length of DiffElectrodeIndexes
+% 29/07 need to add change of labels when we switch to diff mode
+% interpolate stimulation artifact
 
 function EpochProbeDataGUI(varargin)
 
@@ -17,12 +18,13 @@ close all
 RawData = [];           % this is the data that will be loaded from the data file
 NChannels = 32;
 NSamples = [];
-t = [];
+% t = [];
 RelativeStimTimes = [];
+DiffElectrodeIndexes = [];      % for the differential montage
 StimNumber = 1;
 
 Fs = 5e3;       % sampling rate in Hz
-FS = 8;
+% FS = 8;
 ControlColor = 'white';
 
 % this is the full GUI figure
@@ -95,7 +97,7 @@ uicontrol('style','pushbutton', ...
 Top = Top-2*HeightControl;
 mat_pathname = '/Users/dean/Documents/PhD/Probe Analysis/Compumedics Data/UBET_Probe_DAT';
 mat_filename = '*.mat filename';        % declare this here to make it a global
-mat_DataFileAndPath = [mat_pathname '/' mat_filename];
+% mat_DataFileAndPath = [mat_pathname '/' mat_filename];
 TextBox_mat_filename = uicontrol('style','text', ...
     'units', 'normalized', ...
     'position', [LeftControls Top WidthControl 2*HeightControl], ...
@@ -151,7 +153,7 @@ uicontrol('style','text', ...
     'backgroundcolor',ControlColor);
 
 Top = Top-1*HeightControl;
-Offset = 0.5;                                           % initialise the offset
+Offset = 0.3;                                           % initialise the offset
 OffsetEntry = uicontrol('style','edit', ...
     'BackgroundColor', 'white', ...
     'units', 'normalized',...
@@ -266,7 +268,8 @@ TickOffset = 2*Height/(4+MaxPlotChannel-1);
 TickBoxesLeft = Left - 0.05;
 TickBoxWidth = 0.1;
 TickBoxHeight = HeightControl;
-HeightOfTickBoxes = [linspace(Bottom+TickOffset,Bottom+Height-TickOffset,MaxPlotChannel)-TickBoxHeight/2 -1*ones(1,MaximumPossibleNChannels-MaxPlotChannel)];
+HeightOfTickBoxes = [linspace(Bottom+TickOffset,Bottom+Height-TickOffset,MaxPlotChannel)...
+    -TickBoxHeight/2 -1*ones(1,MaximumPossibleNChannels-MaxPlotChannel)];
 
 for nn=1:MaximumPossibleNChannels
     if nn <= MaxPlotChannel
@@ -311,13 +314,29 @@ SamplesAboutStimEdit = uicontrol('style','edit', ...
 
 % move to differential reference
 Top = Top-2*HeightControl;
-uicontrol('style','togglebutton', ...
+RereferenceOnOff = 0;
+RereferenceToggle = uicontrol('style','togglebutton', ...
     'units', 'normalized', ...
     'position', [LeftControls Top WidthControl HeightControl], ...
     'HorizontalAlignment','center', ...
     'parent', DataEpocher_fig, ...
     'string', 're-reference',...
+    'value',RereferenceOnOff,...
     'callback',@Rereference);
+
+MaxDiffCombo = 150;             % maximum number of possible differential pairs
+LabelOffset = 2*Height/(4+MaxDiffCombo-1);
+HeightDiffCHLabel = linspace(Bottom+LabelOffset,Bottom+Height-LabelOffset,MaxDiffCombo)-TickBoxHeight/2;
+for nn=1:MaximumPossibleNChannels
+    DiffChannelLabels(nn) = uicontrol('style','text',...
+        'units', 'normalized', ...
+        'position', [TickBoxesLeft HeightDiffCHLabel(nn) TickBoxWidth TickBoxHeight], ...
+        'HorizontalAlignment','center', ...
+        'parent', DataEpocher_fig, ...
+        'string', '',...
+        'BackgroundColor', 'white',...
+        'visible','off');
+end
 % ~~~~~~~~~~~~~~~~~~    
 % here are the callback functions
 % ~~~~~~~~~~~~~~~~~~
@@ -350,7 +369,7 @@ uicontrol('style','togglebutton', ...
         DataStatusMessage = 'loading data';
         set(DataStatusText,'string',DataStatusMessage)
         RawData = load(dat_FileAndPath);
-        t = RawData(:,1);
+%         t = RawData(:,1);
         RawData = RawData(:,2:end);          % need to change this to be specified
         NSamples = size(RawData,1);
         NChannels = size(RawData,2);
@@ -377,36 +396,56 @@ uicontrol('style','togglebutton', ...
 
     function PlotData(varargin)
         
-        % get the number of channels to plot
-        PlotChannels = 1:MaxPlotChannel;
-        NPlotChannels = length(PlotChannels);
+        StartPlotTime = floor(RelativeStimTimes(StimNumber)*Fs-(StartTime*Fs-1));
+        EndPlotTime = floor((RelativeStimTimes(StimNumber)+EndTime)*Fs);
+        NSamples4Plot = (EndTime+StartTime)*Fs;
+        
+        if RereferenceOnOff
+            PlotChannels = 1:size(DiffElectrodeIndexes,1);
+            NPlotChannels = length(PlotChannels);
+            temp = zeros(NSamples4Plot,NPlotChannels);
+            for n=1:NPlotChannels
+                temp(:,n) = RawData(StartPlotTime:EndPlotTime,DiffElectrodeIndexes(n,1)) ...
+                    - RawData(StartPlotTime:EndPlotTime,DiffElectrodeIndexes(n,2));
+            end
+
+
+        else
+            % get the number of channels to plot
+            PlotChannels = 1:MaxPlotChannel;
+            NPlotChannels = length(PlotChannels);
+            
+            % take data window
+            temp = RawData(StartPlotTime:EndPlotTime,PlotChannels);
+        end
         
         % create the offset
-        NSamples4Plot = (EndTime+StartTime)*Fs;
         OffsetVector = 0:Offset:Offset*(NPlotChannels-1);
         OffsetMatrix = repmat(OffsetVector,NSamples4Plot,1);
-        
-        % take data window
-        temp = RawData(floor(RelativeStimTimes(StimNumber)*Fs-(StartTime*Fs-1):(RelativeStimTimes(StimNumber)+EndTime)*Fs),PlotChannels);
-        
+
         % demean data
         ZeroMeanRawData = temp - repmat(mean(temp,1),NSamples4Plot,1);       % make data zero mean
-        
-        OffsetData = ZeroMeanRawData+OffsetMatrix;
-        % plot it
-        plot(OffsetData(:,~NoiseyChIndex(1:NPlotChannels)),'k','parent',Ax), hold(Ax,'on')
-        plot(OffsetData(:,logical(NoiseyChIndex(1:NPlotChannels))),'r','parent',Ax), hold(Ax,'off')
 
+        OffsetData = ZeroMeanRawData+OffsetMatrix;
+            
+        % plot it
+        if RereferenceOnOff
+            plot(OffsetData,'k','parent',Ax)
+        else
+            plot(OffsetData(:,~NoiseyChIndex(1:NPlotChannels)),'k','parent',Ax), hold(Ax,'on')
+            plot(OffsetData(:,logical(NoiseyChIndex(1:NPlotChannels))),'r','parent',Ax), hold(Ax,'off')
+        end
         axis off
         yMin = -2*Offset;
         yMax = Offset*(NPlotChannels+1);
         ylim([yMin yMax])
-        
+
         % draw a patch around the stimulation artifact
         xPatchStart = StartTime*Fs+3;
         xPatchEnd = StartTime*Fs+4 + SamplesAboutStim;
         patch([xPatchStart xPatchEnd xPatchEnd xPatchStart xPatchStart],[yMin yMin yMax yMax yMin],...
             'g','facealpha',0.5,'edgecolor','none')
+        
     end
 
     function TickBoxFunction(varargin)
@@ -460,113 +499,141 @@ uicontrol('style','togglebutton', ...
         
     end
 
+% this function needs to be called when the number of plot channels changes
+% or the noisy channels change
     function Rereference(varargin)
         
-        ElectrodeRows = 3;
-        ElectrodeCols = 4;
-        ElectrodeComboIndex = 1;                    % this index the list of good electrode combos
-        AllElectrodes = 1:MaxPlotChannel; 
-        GoodElectrodeCombos = {'0'};
-        NoisyElectrodes = AllElectrodes(logical(NoiseyChIndex));
-        for n=1:ElectrodeRows*ElectrodeCols
-            
-            if ~ismember(n,NoisyElectrodes)
-                for m=1:4
+        RereferenceOnOff = get(RereferenceToggle,'value');
+        if RereferenceOnOff == 1        % than it has been turned on or is on
+            ElectrodeRows = 4;
+            ElectrodeCols = 8;
+            ElectrodeComboIndex = 1;                    % this index the list of good electrode combos
+            AllElectrodes = 1:MaxPlotChannel; 
+            GoodElectrodeCombos = {'0'};
+            NoisyElectrodes = AllElectrodes(logical(NoiseyChIndex));
+            for n=1:ElectrodeRows*ElectrodeCols
 
-                    % find the differential montage in a clock-wise fashion
-                    % from the right to bottom to left to top.
+                if ~ismember(n,NoisyElectrodes)
+                    for m=1:4
 
-                    % need to know if there is an electrode to the right
-                    % or if n is a multiple of ElectrodeCols
+                        % find the differential montage in a clock-wise fashion
+                        % from the right to bottom to left to top.
 
-                    if m==1                                                 % electrode to the right
-                        SecondElectrode = n+1;
-                        % check if it is a good electrode
-                        if ~ismember(SecondElectrode,NoisyElectrodes)
-                            % check if we are on the left of the grid
-                            if mod(n,ElectrodeCols)                         % this is zero if we are at the end of a row
+                        % need to know if there is an electrode to the right
+                        % or if n is a multiple of ElectrodeCols
 
-                                % check if electrode combo has been used
-                                ElectrodeCombo = [num2str(n) '-' num2str(SecondElectrode)];
-                                FlippedElectrodeCombo = [num2str(SecondElectrode) '-' num2str(n)];
+                        if m==1                                                 % electrode to the right
+                            SecondElectrode = n+1;
+                            % check if it is a good electrode
+                            if ~ismember(SecondElectrode,NoisyElectrodes)
+                                % check if we are on the left of the grid
+                                if mod(n,ElectrodeCols)                         % this is zero if we are at the end of a row
 
-                                if (sum(strcmp(GoodElectrodeCombos,ElectrodeCombo)) == 0) ...
-                                        && (sum(strcmp(GoodElectrodeCombos,FlippedElectrodeCombo)) == 0)
+                                    % check if electrode combo has been used
+                                    ElectrodeCombo = [num2str(n) '-' num2str(SecondElectrode)];
+                                    FlippedElectrodeCombo = [num2str(SecondElectrode) '-' num2str(n)];
 
-                                    % than we can use it
-                                    GoodElectrodeCombos{ElectrodeComboIndex} = [num2str(n) '-' num2str(SecondElectrode)];
-                                    
-                                    
-                                    
-                                    ElectrodeComboIndex = ElectrodeComboIndex+1;
+                                    if (sum(strcmp(GoodElectrodeCombos,ElectrodeCombo)) == 0) ...
+                                            && (sum(strcmp(GoodElectrodeCombos,FlippedElectrodeCombo)) == 0)
+
+                                        % than we can use it
+                                        GoodElectrodeCombos{ElectrodeComboIndex} = [num2str(n) '-' num2str(SecondElectrode)];
+                                        DiffElectrodeIndexes(ElectrodeComboIndex,:) = [n, SecondElectrode];
+                                        ElectrodeComboIndex = ElectrodeComboIndex+1;
+                                    end
                                 end
                             end
-                        end
 
-                    elseif m ==2                                        % electrode below
-                        SecondElectrode = n+ElectrodeCols;
-                        % check if it is a good electrode
-                        if ~ismember(SecondElectrode,NoisyElectrodes)
-                            % check if we are on the bottom of the grid
-                            if n<=(ElectrodeRows-1)*ElectrodeCols                         % this is zero if we are at the bottom row
+                        elseif m ==2                                        % electrode below
+                            SecondElectrode = n+ElectrodeCols;
+                            % check if it is a good electrode
+                            if ~ismember(SecondElectrode,NoisyElectrodes)
+                                % check if we are on the bottom of the grid
+                                if n<=(ElectrodeRows-1)*ElectrodeCols                         % this is zero if we are at the bottom row
 
-                                % check if electrode combo has been used
-                                ElectrodeCombo = [num2str(n) '-' num2str(SecondElectrode)];
-                                FlippedElectrodeCombo = [num2str(SecondElectrode) '-' num2str(n)];
+                                    % check if electrode combo has been used
+                                    ElectrodeCombo = [num2str(n) '-' num2str(SecondElectrode)];
+                                    FlippedElectrodeCombo = [num2str(SecondElectrode) '-' num2str(n)];
 
-                                if (sum(strcmp(GoodElectrodeCombos,ElectrodeCombo)) == 0) ...
-                                        && (sum(strcmp(GoodElectrodeCombos,FlippedElectrodeCombo)) == 0)
+                                    if (sum(strcmp(GoodElectrodeCombos,ElectrodeCombo)) == 0) ...
+                                            && (sum(strcmp(GoodElectrodeCombos,FlippedElectrodeCombo)) == 0)
 
-                                    % than we can use it
-                                    GoodElectrodeCombos{ElectrodeComboIndex} = [num2str(n) '-' num2str(SecondElectrode)];
-                                    ElectrodeComboIndex = ElectrodeComboIndex+1;
+                                        % than we can use it
+                                        GoodElectrodeCombos{ElectrodeComboIndex} = [num2str(n) '-' num2str(SecondElectrode)];
+                                        DiffElectrodeIndexes(ElectrodeComboIndex,:) = [n, SecondElectrode];
+                                        ElectrodeComboIndex = ElectrodeComboIndex+1;
+                                    end
+                                end
+                            end      
+
+                        elseif m ==3                                        % electrode left
+                            SecondElectrode = n-1;
+                            % check if it is a good electrode
+                            if ~ismember(SecondElectrode,NoisyElectrodes)
+                                % check if we are on the left of the grid
+                                if mod(n-1,ElectrodeCols)                         % this is zero if we are at the bottom row
+
+                                    % check if electrode combo has been used
+                                    ElectrodeCombo = [num2str(n) '-' num2str(SecondElectrode)];
+                                    FlippedElectrodeCombo = [num2str(SecondElectrode) '-' num2str(n)];
+
+                                    if (sum(strcmp(GoodElectrodeCombos,ElectrodeCombo)) == 0) ...
+                                            && (sum(strcmp(GoodElectrodeCombos,FlippedElectrodeCombo)) == 0)
+
+                                        % than we can use it
+                                        GoodElectrodeCombos{ElectrodeComboIndex} = [num2str(n) '-' num2str(SecondElectrode)];
+                                        DiffElectrodeIndexes(ElectrodeComboIndex,:) = [n, SecondElectrode];
+                                        ElectrodeComboIndex = ElectrodeComboIndex+1;
+                                    end
                                 end
                             end
-                        end      
+                        elseif m == 4                                        % electrode above
+                            SecondElectrode = n-ElectrodeCols;
+                            % check if it is a good electrode
+                            if ~ismember(SecondElectrode,NoisyElectrodes)
+                                % check if we are on the left of the grid
+                                if n>ElectrodeCols                         % this is zero if we are at the bottom row
 
-                    elseif m ==3                                        % electrode left
-                        SecondElectrode = n-1;
-                        % check if it is a good electrode
-                        if ~ismember(SecondElectrode,NoisyElectrodes)
-                            % check if we are on the left of the grid
-                            if mod(n-1,ElectrodeCols)                         % this is zero if we are at the bottom row
+                                    % check if electrode combo has been used
+                                    ElectrodeCombo = [num2str(n) '-' num2str(SecondElectrode)];
+                                    FlippedElectrodeCombo = [num2str(SecondElectrode) '-' num2str(n)];
 
-                                % check if electrode combo has been used
-                                ElectrodeCombo = [num2str(n) '-' num2str(SecondElectrode)];
-                                FlippedElectrodeCombo = [num2str(SecondElectrode) '-' num2str(n)];
+                                    if (sum(strcmp(GoodElectrodeCombos,ElectrodeCombo)) == 0) ...
+                                            && (sum(strcmp(GoodElectrodeCombos,FlippedElectrodeCombo)) == 0)
 
-                                if (sum(strcmp(GoodElectrodeCombos,ElectrodeCombo)) == 0) ...
-                                        && (sum(strcmp(GoodElectrodeCombos,FlippedElectrodeCombo)) == 0)
-
-                                    % than we can use it
-                                    GoodElectrodeCombos{ElectrodeComboIndex} = [num2str(n) '-' num2str(SecondElectrode)];
-                                    ElectrodeComboIndex = ElectrodeComboIndex+1;
-                                end
-                            end
-                        end
-                    elseif m == 4                                        % electrode above
-                        SecondElectrode = n-ElectrodeCols;
-                        % check if it is a good electrode
-                        if ~ismember(SecondElectrode,NoisyElectrodes)
-                            % check if we are on the left of the grid
-                            if n>ElectrodeCols                         % this is zero if we are at the bottom row
-
-                                % check if electrode combo has been used
-                                ElectrodeCombo = [num2str(n) '-' num2str(SecondElectrode)];
-                                FlippedElectrodeCombo = [num2str(SecondElectrode) '-' num2str(n)];
-
-                                if (sum(strcmp(GoodElectrodeCombos,ElectrodeCombo)) == 0) ...
-                                        && (sum(strcmp(GoodElectrodeCombos,FlippedElectrodeCombo)) == 0)
-
-                                    % than we can use it
-                                    GoodElectrodeCombos{ElectrodeComboIndex} = [num2str(n) '-' num2str(SecondElectrode)];
-                                    ElectrodeComboIndex = ElectrodeComboIndex+1;
+                                        % than we can use it
+                                        GoodElectrodeCombos{ElectrodeComboIndex} = [num2str(n) '-' num2str(SecondElectrode)];                                    
+                                        DiffElectrodeIndexes(ElectrodeComboIndex,:) = [n, SecondElectrode];
+                                        ElectrodeComboIndex = ElectrodeComboIndex+1;
+                                    end
                                 end
                             end
                         end
                     end
                 end
             end
+        
+        % here we need to set the channel labels for diff if the button is down
+            for n=1:MaximumPossibleNChannels
+                set(NoiseyChTickBox(n),'visible','off');
+            end
+            MaxDiffCombo = length(GoodElectrodeCombos);
+            LabelOffset = 2*Height/(4+MaxDiffCombo-1);
+            HeightDiffCHLabel = linspace(Bottom+LabelOffset,Bottom+Height-LabelOffset,MaxDiffCombo)-TickBoxHeight/2;
+            for n=1:MaxDiffCombo
+                set(DiffChannelLabels(n),'string',GoodElectrodeCombos{n},...
+                    'position',[TickBoxesLeft HeightDiffCHLabel(n) TickBoxWidth TickBoxHeight],...
+                    'visible','on',...
+                    'BackgroundColor', 'white')
+            end
+        else  
+            
+        % if the button is up we need to set the labels to the tick boxes
+            for n=1:MaxDiffCombo
+                set(DiffChannelLabels(n),...
+                    'visible','off')
+            end
         end
     end
+
 end
