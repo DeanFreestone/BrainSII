@@ -5,8 +5,6 @@
 
 % to do list
 % ~~~~~
-% 29/07 need to pre-define the length of DiffElectrodeIndexes
-% 29/07 need to add change of labels when we switch to diff mode
 % interpolate stimulation artifact
 
 function EpochProbeDataGUI(varargin)
@@ -312,6 +310,16 @@ SamplesAboutStimEdit = uicontrol('style','edit', ...
     'string',num2str(SamplesAboutStim),...
     'callback',@SetSamplesAboutStim);
 
+Top = Top-1*HeightControl;
+uicontrol('style','pushbutton', ...
+    'BackgroundColor', 'white', ...
+    'units', 'normalized',...
+    'position', [LeftControls Top WidthControl HeightControl], ...
+    'HorizontalAlignment','center', ...
+    'parent', DataEpocher_fig, ...
+    'string','remove stim artifact',...
+    'callback',@RemoveStimArtifact);
+
 % move to differential reference
 Top = Top-2*HeightControl;
 RereferenceOnOff = 0;
@@ -337,6 +345,7 @@ for nn=1:MaximumPossibleNChannels
         'BackgroundColor', 'white',...
         'visible','off');
 end
+
 % ~~~~~~~~~~~~~~~~~~    
 % here are the callback functions
 % ~~~~~~~~~~~~~~~~~~
@@ -368,7 +377,9 @@ end
     function LoadData(varargin)
         DataStatusMessage = 'loading data';
         set(DataStatusText,'string',DataStatusMessage)
+        tic
         RawData = load(dat_FileAndPath);
+        toc
 %         t = RawData(:,1);
         RawData = RawData(:,2:end);          % need to change this to be specified
         NSamples = size(RawData,1);
@@ -503,6 +514,9 @@ end
 % or the noisy channels change
     function Rereference(varargin)
         
+        GoodElectrodeCombos = {};
+        DiffElectrodeIndexes = [];
+        
         RereferenceOnOff = get(RereferenceToggle,'value');
         if RereferenceOnOff == 1        % than it has been turned on or is on
             ElectrodeRows = 4;
@@ -511,7 +525,7 @@ end
             AllElectrodes = 1:MaxPlotChannel; 
             GoodElectrodeCombos = {'0'};
             NoisyElectrodes = AllElectrodes(logical(NoiseyChIndex));
-            for n=1:ElectrodeRows*ElectrodeCols
+            for n=1:MaxPlotChannel
 
                 if ~ismember(n,NoisyElectrodes)
                     for m=1:4
@@ -622,10 +636,12 @@ end
             HeightDiffCHLabel = linspace(Bottom+LabelOffset,Bottom+Height-LabelOffset,MaxDiffCombo)-TickBoxHeight/2;
             for n=1:MaxDiffCombo
                 set(DiffChannelLabels(n),'string',GoodElectrodeCombos{n},...
-                    'position',[TickBoxesLeft HeightDiffCHLabel(n) TickBoxWidth TickBoxHeight],...
+                    'position',[TickBoxesLeft HeightDiffCHLabel(n) 0.03 TickBoxHeight/2],...
                     'visible','on',...
-                    'BackgroundColor', 'white')
+                    'BackgroundColor', 'white',...
+                    'fontsize',8)
             end
+            PlotData()
         else  
             
         % if the button is up we need to set the labels to the tick boxes
@@ -633,7 +649,26 @@ end
                 set(DiffChannelLabels(n),...
                     'visible','off')
             end
+            for n =1:MaxPlotChannel
+                set(NoiseyChTickBox(n),'visible','on')
+            end
+            PlotData()
         end
     end
 
+    function RemoveStimArtifact(varargin)
+        Samples2Remove = [];
+        for n=1:length(RelativeStimTimes)
+            Samples2Remove = [Samples2Remove floor(RelativeStimTimes(n)*Fs+3:RelativeStimTimes(n)*Fs+3+SamplesAboutStim)];
+        end
+        
+        AllIndexes = 1:NSamples;
+        GoodIndexes = ~ismember(AllIndexes,Samples2Remove);         % this is a logical to index good samples
+        for n=1:NChannels
+            GoodDataPoints = RawData(GoodIndexes,n);
+            IndexesOfGoodDataPoints = AllIndexes(GoodIndexes);
+            RawData(:,n) = interp1(IndexesOfGoodDataPoints, GoodDataPoints, AllIndexes);
+        end
+        PlotData()
+    end
 end
