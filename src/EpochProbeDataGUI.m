@@ -5,7 +5,10 @@
 
 % to do list
 % ~~~~~
-% interpolate stimulation artifact
+% add control for size of grid
+% add control for smoothing and filter
+% need to add invisibility or checks so things are done in order
+% need to make button go red when their function has finished
 
 function EpochProbeDataGUI(varargin)
 
@@ -320,6 +323,26 @@ uicontrol('style','pushbutton', ...
     'string','remove stim artifact',...
     'callback',@RemoveStimArtifact);
 
+Top = Top-1*HeightControl;
+uicontrol('style','pushbutton', ...
+    'BackgroundColor', 'white', ...
+    'units', 'normalized',...
+    'position', [LeftControls Top WidthControl HeightControl], ...
+    'HorizontalAlignment','center', ...
+    'parent', DataEpocher_fig, ...
+    'string','smooth and filter',...
+    'callback',@SmoothAndFilter);
+
+Top = Top-1*HeightControl;
+uicontrol('style','pushbutton', ...
+    'BackgroundColor', 'white', ...
+    'units', 'normalized',...
+    'position', [LeftControls Top WidthControl HeightControl], ...
+    'HorizontalAlignment','center', ...
+    'parent', DataEpocher_fig, ...
+    'string','decimate',...
+    'callback',@Decimate);
+
 % move to differential reference
 Top = Top-2*HeightControl;
 RereferenceOnOff = 0;
@@ -507,7 +530,6 @@ end
     function SetSamplesAboutStim(varargin)
         SamplesAboutStim = str2double(get(SamplesAboutStimEdit,'string'));
         PlotData()
-        
     end
 
 % this function needs to be called when the number of plot channels changes
@@ -671,4 +693,29 @@ end
         end
         PlotData()
     end
+
+    function SmoothAndFilter(varargin)
+        
+        % first smooth data using a moving average filter
+        WindowSize = 5;
+        tic
+        for n=WindowSize+1:NSamples
+            RawData(n,:) = mean(RawData(n-WindowSize:n,:),1);
+        end
+        toc
+        LPFilterOrder = 100;
+        LPFiltCutOff = 100;     % Hz
+        Wn = LPFiltCutOff/(Fs/2);
+        b = fir1(LPFilterOrder,Wn);
+        
+        RawData = flipud(filtfilt(b,1,flipud(RawData)));
+        PlotData()
+    end
+
+    function Decimate(varargin)
+        RawData = RawData(1:5:NSamples,:);
+        Fs = 1e3;
+        
+    end
+        
 end
