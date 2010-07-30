@@ -9,7 +9,8 @@
 % add control for smoothing and filter
 % need to add invisibility or checks so things are done in order
 % need to make button go red when their function has finished
-% need to add reject epoch feature
+% need add stim x of y message with the number of rejects
+% work out why the reject button doesn't go red
 
 function EpochProbeDataGUI(varargin)
 
@@ -497,20 +498,32 @@ end
         if StimNumber > 1
             StimNumber = StimNumber-1;
         end
+        if GoodEpochIndex(StimNumber)
+            set(StimRejectButton,'backgroundcolor','white','value',0)
+        else
+            set(StimRejectButton,'backgroundcolor','red','value',1)
+        end
         PlotData()
     end
 
     function StimReject(varargin)
         if logical(get(StimRejectButton,'value'))
             GoodEpochIndex(StimNumber) = false;
+            set(StimRejectButton,'backgroundcolor','red')
         else
             GoodEpochIndex(StimNumber) = true;
+            set(StimRejectButton,'backgroundcolor','red')
         end
     end
 
     function StimForward(varargin)
         if StimNumber < 100
             StimNumber = StimNumber+1;
+        end
+        if GoodEpochIndex(StimNumber)
+            set(StimRejectButton,'backgroundcolor','white','value',0)
+        else
+            set(StimRejectButton,'backgroundcolor','red','value',1)
         end
         PlotData()
     end
