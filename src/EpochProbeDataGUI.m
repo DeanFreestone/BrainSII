@@ -9,6 +9,7 @@
 % add control for smoothing and filter
 % need to add invisibility or checks so things are done in order
 % need to make button go red when their function has finished
+% need to add reject epoch feature
 
 function EpochProbeDataGUI(varargin)
 
@@ -23,6 +24,7 @@ NSamples = [];
 RelativeStimTimes = [];
 DiffElectrodeIndexes = [];      % for the differential montage
 StimNumber = 1;
+GoodEpochIndex = true(1,100);            % this index is used to accept or reject epochs
 
 Fs = 5e3;       % sampling rate in Hz
 % FS = 8;
@@ -243,7 +245,7 @@ uicontrol('style','pushbutton', ...
     'string', 'backward',...
     'callback',@StimBackward);   
 
-uicontrol('style','pushbutton', ...
+StimRejectButton = uicontrol('style','togglebutton', ...
     'units', 'normalized', ...
     'position', [LeftControls+WidthControl/3 Top WidthControl/3 HeightControl], ...
     'HorizontalAlignment','center', ...
@@ -496,6 +498,14 @@ end
             StimNumber = StimNumber-1;
         end
         PlotData()
+    end
+
+    function StimReject(varargin)
+        if logical(get(StimRejectButton,'value'))
+            GoodEpochIndex(StimNumber) = false;
+        else
+            GoodEpochIndex(StimNumber) = true;
+        end
     end
 
     function StimForward(varargin)
