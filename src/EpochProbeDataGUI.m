@@ -9,8 +9,6 @@
 % add control for smoothing and filter
 % need to add invisibility or checks so things are done in order
 % need to make button go red when their function has finished
-% need add stim x of y message with the number of rejects
-% work out why the reject button doesn't go red
 
 function EpochProbeDataGUI(varargin)
 
@@ -25,8 +23,9 @@ NSamples = [];
 RelativeStimTimes = [];
 DiffElectrodeIndexes = [];      % for the differential montage
 StimNumber = 1;
-GoodEpochIndex = true(1,100);            % this index is used to accept or reject epochs
-
+NStims = 100;
+GoodEpochIndex = true(1,NStims);            % this index is used to accept or reject epochs
+NStimsRejected = 0;
 Fs = 5e3;       % sampling rate in Hz
 % FS = 8;
 ControlColor = 'white';
@@ -55,7 +54,7 @@ Ax = axes('parent',DataEpocher_fig,...
         'units', 'normalized',...
         'position', [Left Bottom Width Height]);
 axis off
-Top = Top-HeightControl;
+
 uicontrol('style','pushbutton', ...
     'units', 'normalized', ...
     'position', [LeftControls Top WidthControl HeightControl], ...
@@ -237,7 +236,17 @@ uicontrol('style','pushbutton', ...
     'string', 'plot data',...
     'callback',@PlotData);   
 
-Top = Top-2*HeightControl;
+Top = Top-1*HeightControl;
+StimIndexDisplayString = ['stim ' num2str(StimNumber) ' of ' num2str(NStims) ' (0 rejected)'];
+StimNumberTextBox = uicontrol('style','text', ...
+    'units', 'normalized', ...
+    'position', [LeftControls Top WidthControl HeightControl], ...
+    'HorizontalAlignment','center', ...
+    'parent', DataEpocher_fig, ...
+    'string', StimIndexDisplayString,...
+    'backgroundcolor',ControlColor);
+
+Top = Top-1*HeightControl;
 uicontrol('style','pushbutton', ...
     'units', 'normalized', ...
     'position', [LeftControls Top WidthControl/3 HeightControl], ...
@@ -317,7 +326,7 @@ SamplesAboutStimEdit = uicontrol('style','edit', ...
     'callback',@SetSamplesAboutStim);
 
 Top = Top-1*HeightControl;
-uicontrol('style','pushbutton', ...
+RemoveStimArtifactButton = uicontrol('style','pushbutton', ...
     'BackgroundColor', 'white', ...
     'units', 'normalized',...
     'position', [LeftControls Top WidthControl HeightControl], ...
@@ -327,7 +336,7 @@ uicontrol('style','pushbutton', ...
     'callback',@RemoveStimArtifact);
 
 Top = Top-1*HeightControl;
-uicontrol('style','pushbutton', ...
+SmoothAndFilterButton = uicontrol('style','pushbutton', ...
     'BackgroundColor', 'white', ...
     'units', 'normalized',...
     'position', [LeftControls Top WidthControl HeightControl], ...
@@ -337,7 +346,7 @@ uicontrol('style','pushbutton', ...
     'callback',@SmoothAndFilter);
 
 Top = Top-1*HeightControl;
-uicontrol('style','pushbutton', ...
+DecimateButton = uicontrol('style','pushbutton', ...
     'BackgroundColor', 'white', ...
     'units', 'normalized',...
     'position', [LeftControls Top WidthControl HeightControl], ...
@@ -357,6 +366,16 @@ RereferenceToggle = uicontrol('style','togglebutton', ...
     'string', 're-reference',...
     'value',RereferenceOnOff,...
     'callback',@Rereference);
+
+Top = Top-1*HeightControl;
+uicontrol('style','pushbutton', ...
+    'BackgroundColor', 'white', ...
+    'units', 'normalized',...
+    'position', [LeftControls Top WidthControl HeightControl], ...
+    'HorizontalAlignment','center', ...
+    'parent', DataEpocher_fig, ...
+    'string','export pre-processed data',...
+    'callback',@Decimate);
 
 MaxDiffCombo = 150;             % maximum number of possible differential pairs
 LabelOffset = 2*Height/(4+MaxDiffCombo-1);
@@ -398,6 +417,8 @@ end
         ProbeInfo = load(mat_FileAndPath);
         StartTimeOfDatFile = ProbeInfo.DataExportTimes(FileNumber,1);
         RelativeStimTimes = ProbeInfo.StimTime(FileNumber,:)-StartTimeOfDatFile;
+        NStims = length(RelativeStimTimes(RelativeStimTimes>0));         % might need to make a conditipo 
+        GoodEpochIndex = true(1,NStims);            % this index is used to accept or reject epochs
     end
 
     function LoadData(varargin)
@@ -499,20 +520,28 @@ end
             StimNumber = StimNumber-1;
         end
         if GoodEpochIndex(StimNumber)
-            set(StimRejectButton,'backgroundcolor','white','value',0)
+            set(StimRejectButton,'backgroundcolor','white','value',0,'foregroundcolor','black')
         else
-            set(StimRejectButton,'backgroundcolor','red','value',1)
+            set(StimRejectButton,'backgroundcolor','red','value',1,'foregroundcolor','red')
         end
+        StimIndexDisplayString = ['stim ' num2str(StimNumber) ' of ' num2str(NStims) ' ( ' num2str(NStimsRejected) ' rejected)'];
+        set(StimNumberTextBox,'string',StimIndexDisplayString)
         PlotData()
     end
 
     function StimReject(varargin)
         if logical(get(StimRejectButton,'value'))
             GoodEpochIndex(StimNumber) = false;
-            set(StimRejectButton,'backgroundcolor','red')
+            set(StimRejectButton,'backgroundcolor','red','foregroundcolor','red')
+            NStimsRejected = sum(~GoodEpochIndex);
+            StimIndexDisplayString = ['stim ' num2str(StimNumber) ' of ' num2str(NStims) ' ( ' num2str(NStimsRejected) ' rejected)'];
+            set(StimNumberTextBox,'string',StimIndexDisplayString)
         else
             GoodEpochIndex(StimNumber) = true;
-            set(StimRejectButton,'backgroundcolor','red')
+            set(StimRejectButton,'backgroundcolor','white','foregroundcolor','black')
+            NStimsRejected = sum(~GoodEpochIndex);
+            StimIndexDisplayString = ['stim ' num2str(StimNumber) ' of ' num2str(NStims) ' ( ' num2str(NStimsRejected) ' rejected)'];
+            set(StimNumberTextBox,'string',StimIndexDisplayString)
         end
     end
 
@@ -521,10 +550,12 @@ end
             StimNumber = StimNumber+1;
         end
         if GoodEpochIndex(StimNumber)
-            set(StimRejectButton,'backgroundcolor','white','value',0)
+            set(StimRejectButton,'backgroundcolor','white','value',0,'foregroundcolor','black')
         else
-            set(StimRejectButton,'backgroundcolor','red','value',1)
+            set(StimRejectButton,'backgroundcolor','red','value',1,'foregroundcolor','red')
         end
+        StimIndexDisplayString = ['stim ' num2str(StimNumber) ' of ' num2str(NStims) ' ( ' num2str(NStimsRejected) ' rejected)'];
+        set(StimNumberTextBox,'string',StimIndexDisplayString)
         PlotData()
     end
 
@@ -702,6 +733,7 @@ end
     end
 
     function RemoveStimArtifact(varargin)
+        disp('dont press twice')
         Samples2Remove = [];
         for n=1:length(RelativeStimTimes)
             Samples2Remove = [Samples2Remove floor(RelativeStimTimes(n)*Fs+3:RelativeStimTimes(n)*Fs+3+SamplesAboutStim)];
@@ -714,6 +746,7 @@ end
             IndexesOfGoodDataPoints = AllIndexes(GoodIndexes);
             RawData(:,n) = interp1(IndexesOfGoodDataPoints, GoodDataPoints, AllIndexes);
         end
+        set(RemoveStimArtifactButton,'visible','off')
         PlotData()
     end
 
@@ -732,13 +765,17 @@ end
         b = fir1(LPFilterOrder,Wn);
         
         RawData = flipud(filtfilt(b,1,flipud(RawData)));
+        
+        set(SmoothAndFilterButton,'visible','off')
+
         PlotData()
     end
 
     function Decimate(varargin)
         RawData = RawData(1:5:NSamples,:);
         Fs = 1e3;
-        
+        set(DecimateButton,'visible','off')
+        PlotData()
     end
         
 end
