@@ -5,7 +5,6 @@
 
 % to do list
 % ~~~~~
-% add control for smoothing and filter
 
 function EpochProbeDataGUI(varargin)
 
@@ -24,6 +23,8 @@ NStims = 100;
 GoodEpochIndex = true(1,NStims);            % this index is used to accept or reject epochs
 NStimsRejected = 0;
 Fs = 5e3;       % sampling rate in Hz
+SaveFileDir = '';
+
 % FS = 8;
 ControlColor = 'white';
 
@@ -359,6 +360,45 @@ RemoveStimArtifactButton = uicontrol('style','pushbutton', ...
     'callback',@RemoveStimArtifact);
 
 Top = Top-2*HeightControl;
+uicontrol('style','text', ...
+    'units', 'normalized', ...
+    'position', [LeftControls Top WidthControl/2 HeightControl], ...
+    'HorizontalAlignment','center', ...
+    'parent', DataEpocher_fig, ...
+    'string', 'N_ave, N_LP, f_c',...
+    'backgroundcolor',ControlColor);
+
+WindowSize = 5;
+WindowSizeEdit = uicontrol('style','edit', ...
+    'BackgroundColor', 'white', ...
+    'units', 'normalized',...
+    'position', [LeftControls+WidthControl/2 Top WidthControl/6 HeightControl], ...
+    'HorizontalAlignment','center', ...
+    'parent', DataEpocher_fig, ...
+    'string',num2str(WindowSize),...
+    'callback',@SetWindowSize);
+
+LPFilterOrder = 100;
+LPFiltOrderEdit = uicontrol('style','edit', ...
+    'BackgroundColor', 'white', ...
+    'units', 'normalized',...
+    'position', [LeftControls+WidthControl/2+WidthControl/6 Top WidthControl/6 HeightControl], ...
+    'HorizontalAlignment','center', ...
+    'parent', DataEpocher_fig, ...
+    'string',num2str(LPFilterOrder),...
+    'callback',@SetLPFiltOrder);
+
+LPFiltCutOff = 100;     % Hz
+LPFiltCutOffEdit = uicontrol('style','edit', ...
+    'BackgroundColor', 'white', ...
+    'units', 'normalized',...
+    'position', [LeftControls+WidthControl/2+2*WidthControl/6 Top WidthControl/6 HeightControl], ...
+    'HorizontalAlignment','center', ...
+    'parent', DataEpocher_fig, ...
+    'string',num2str(LPFiltCutOff),...
+    'callback',@SetLPFiltCutoff);
+
+Top = Top-1*HeightControl;
 SmoothAndFilterButton = uicontrol('style','pushbutton', ...
     'BackgroundColor', 'white', ...
     'units', 'normalized',...
@@ -423,8 +463,17 @@ end
         [dat_filename dat_pathname] = uigetfile('*.dat','Pick a data (.dat) file',dat_pathname);
         dat_FileAndPath = [dat_pathname '/' dat_filename];
         set(TextBox_dat_filename,'string',dat_filename)
+        
+        SaveFileDir = [dat_pathname 'PreprocessedData'];
+        
+        if exist(SaveFileDir,'dir') == 7
+            disp('dir exists')
+        else
+            mkdir(SaveFileDir)
+        end
+        
         files = dir(dat_pathname);
-        files = files(3:end-1);
+        files = files(3:end-2);
         length(files)
         for n=1:length(files)
             if strcmp(dat_filename,files(n).name)
@@ -781,17 +830,26 @@ end
         PlotData()
     end
 
+    function SetWindowSize
+        WindowSize = str2double(get(WindowSizeEdit,'string'));
+    end
+
+    function SetLPFiltOrder(varargin)
+        LPFilterOrder = str2double(get(LPFiltOrderEdit,'string'));
+    end
+
+    function SetLPFiltCutoff(varargin)
+        LPFiltCutOff = str2double(get(LPFiltCutOffEdit,'string'));
+    end
+
     function SmoothAndFilter(varargin)
         
         % first smooth data using a moving average filter
-        WindowSize = 5;
         tic
         for n=WindowSize+1:NSamples
             RawData(n,:) = mean(RawData(n-WindowSize:n,:),1);
         end
         toc
-        LPFilterOrder = 100;
-        LPFiltCutOff = 100;     % Hz
         Wn = LPFiltCutOff/(Fs/2);
         b = fir1(LPFilterOrder,Wn);
         
@@ -826,10 +884,12 @@ end
             
         end
         
+
+
         % now save the data and the channel descriptions.
-        SaveFileName = [dat_pathname dat_filename(1:end-4) '_Preprocessed.mat'];
+        SaveFileName = [SaveFileDir '/' dat_filename(1:end-4) '_Preprocessed.mat'];
         save(SaveFileName,'GoodElectrodeCombos','PreprocessedData',...
             'GoodEpochIndex','RelativeStimTimes','MaxPlotChannel','StartTime',...
-            'EndTime','Fs','ElectrodeRows','ElectrodeCols')
-    end
+            'EndTime','Fs','ElectrodeRows','ElectrodeCols','WindowSize','LPFilterOrder','LPFiltCutOff')
+     end
 end
