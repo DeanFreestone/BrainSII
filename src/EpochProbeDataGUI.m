@@ -473,7 +473,7 @@ end
         end
         
         files = dir(dat_pathname);
-        files = files(4:end-2);            % <- error here
+        files = files(4:end-2);            
         length(files)
         for n=1:length(files)
             if strcmp(dat_filename,files(n).name)
