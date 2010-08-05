@@ -473,7 +473,7 @@ end
         end
         
         files = dir(dat_pathname);
-        files = files(3:end-2);
+        files = files(4:end-2);            % <- error here
         length(files)
         for n=1:length(files)
             if strcmp(dat_filename,files(n).name)
@@ -891,5 +891,6 @@ end
         save(SaveFileName,'GoodElectrodeCombos','PreprocessedData',...
             'GoodEpochIndex','RelativeStimTimes','MaxPlotChannel','StartTime',...
             'EndTime','Fs','ElectrodeRows','ElectrodeCols','WindowSize','LPFilterOrder','LPFiltCutOff')
+        disp('save ok')
      end
 end
