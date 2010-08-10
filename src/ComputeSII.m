@@ -41,7 +41,7 @@ for n=1:1%length(PreprocessedFiles)
         % cycle through all the stimulations
         for nnn=1:size(PreprocessedData,1)
             CurrentEpoch = squeeze(PreprocessedData(nnn,round(StartSample4Window:EndSample4Window),:));
-            BPFiltData = filtfilt(b,1,CurrentEpoch);
+            BPFiltData = detrend(filtfilt(b,1,CurrentEpoch));
             
             % cycle through channels to perform CPT to get IP
             % need to replace what is inside this loop with the CPT.
@@ -57,10 +57,14 @@ for n=1:1%length(PreprocessedFiles)
             m=1;
             for nnnn=1:size(IP_trim,2)
                 for nnnnn=1:size(IP_trim,2)
-                    
+%                     plot(detrend(BPFiltData(:,nnnn))), hold on
+%                     plot(detrend(BPFiltData(:,nnnnn)),'r'), hold off
+%                     title(num2str(m)), drawnow, pause(0.1)
                     IP_diff = IP_trim(:,nnnn) - IP_trim(:,nnnnn);
-%                     plot(IP_diff),title(num2str(m)),drawnow,pause(0.1)
-                    PLV(nn,nnn,m) = abs(sum(exp(1i*IP_diff)) / NSamplesInCutWindow); % nn indexes freq bands, nnn indexes stimulations, m indexes channel combos
+%                     plot(IP_diff), title(num2str(m)), drawnow, pause(0.1)
+                    PLV_temp = abs( sum( exp( 1i*IP_diff )) / NSamplesInCutWindow ); % nn indexes freq bands, nnn indexes stimulations, m indexes channel combos
+%                     disp(num2str(PLV_temp))
+                    PLV(nn,nnn,m) = PLV_temp;
                     m = m+1;
                     
                 end
@@ -70,12 +74,33 @@ for n=1:1%length(PreprocessedFiles)
             
         end
     end
+    
+    % here use poissfit to lambda, and then poisstat(lambda) to get mean.
+    
+    
     toc
 end
 
-PLVfirst = squeeze(PLV(1,:,:));
-for n=272:size(PLVfirst,2)
-    hist(PLVfirst(:,n))
+
+nbins = 40;
+for n=1:size(PLV,1)
+    PLVfreqband = squeeze(PLV(n,:,:));
+    figure
+    for nn=1:size(PLVfreqband,2)
+        hist(PLVfreqband(:,nn),nbins)
+        title(num2str(nn))
+        drawnow
+        pause(0.0)
+    end
+    figure
+    bar(mean(PLVfreqband,1))
+end
+
+
+figure
+for n=1:size(PLVfreqband,2)
+    hist(PLVfreqband(:,n))
+    title(num2str(n))
     drawnow
-    pause
+    pause(0.1)
 end
