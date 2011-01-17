@@ -12,6 +12,8 @@ clc
 clear
 close all
 
+StimCorrectionOffset = 0;
+
 RawData = [];           % this is the data that will be loaded from the data file
 NChannels = 32;
 NSamples = [];
@@ -37,7 +39,7 @@ DataEpocher_fig = figure('Name','Probe Epoch',...
     'menubar','none',...
     'color',ControlColor);
 
-Top = 0.9;
+Top = 0.95;
 LeftControls = 0.8;
 % RightControls = 0.001;
 WidthControl = 0.17;
@@ -108,7 +110,43 @@ TextBox_mat_filename = uicontrol('style','text', ...
     'backgroundcolor',ControlColor);
 
 Top = Top-1*HeightControl;
-uicontrol('style','pushbutton', ...
+uicontrol('style','text', ...
+    'units', 'normalized', ...
+    'position', [LeftControls Top WidthControl/2 HeightControl], ...
+    'HorizontalAlignment','center', ...
+    'parent', DataEpocher_fig, ...
+    'string', 'start ch:',...
+    'backgroundcolor',ControlColor);
+
+StartCh = 1;
+StartChEdit = uicontrol('style','edit', ...
+    'units', 'normalized', ...
+    'position', [LeftControls+WidthControl/2 Top WidthControl/2 HeightControl], ...
+    'HorizontalAlignment','center', ...
+    'parent', DataEpocher_fig, ...
+    'string', num2str(StartCh),...
+    'backgroundcolor',ControlColor);
+
+Top = Top-1*HeightControl;
+uicontrol('style','text', ...
+    'units', 'normalized', ...
+    'position', [LeftControls Top WidthControl/2 HeightControl], ...
+    'HorizontalAlignment','center', ...
+    'parent', DataEpocher_fig, ...
+    'string', 'end ch:',...
+    'backgroundcolor',ControlColor);
+
+EndCh = 32;
+EndChEdit = uicontrol('style','edit', ...
+    'units', 'normalized', ...
+    'position', [LeftControls+WidthControl/2 Top WidthControl/2 HeightControl], ...
+    'HorizontalAlignment','center', ...
+    'parent', DataEpocher_fig, ...
+    'string', num2str(EndCh),...
+    'backgroundcolor',ControlColor);
+
+Top = Top-1*HeightControl;
+loadbutton = uicontrol('style','pushbutton', ...
     'units', 'normalized', ...
     'position', [LeftControls Top WidthControl HeightControl], ...
     'HorizontalAlignment','center', ...
@@ -201,7 +239,8 @@ uicontrol('style','text', ...
     'string', 'max ch for plot',...
     'backgroundcolor',ControlColor);
 
-MaxPlotChannel = 32;                                % initialize the number of channels to plot
+% MaxPlotChannel = 32;                                % initialize the number of channels to plot
+MaxPlotChannel = EndCh;
 MaxPlotChEdit = uicontrol('style','edit', ...
     'BackgroundColor', 'white', ...
     'units', 'normalized',...
@@ -318,7 +357,7 @@ uicontrol('style','pushbutton', ...
 % use a background high-lighter to show where stims occur
 
 % use a tick box to identify bad channels
-MaximumPossibleNChannels = 128;
+MaximumPossibleNChannels = 230;
 NoiseyChTickBox = zeros(1,MaximumPossibleNChannels);
 NoiseyChIndex = zeros(1,MaximumPossibleNChannels);
 TickOffset = 2*Height/(4+MaxPlotChannel-1);
@@ -328,6 +367,10 @@ TickBoxHeight = HeightControl;
 HeightOfTickBoxes = [linspace(Bottom+TickOffset,Bottom+Height-TickOffset,MaxPlotChannel)...
     -TickBoxHeight/2 -1*ones(1,MaximumPossibleNChannels-MaxPlotChannel)];
 
+BoxFontSize = 8;
+
+StartPlotChannel = 5;
+
 for nn=1:MaximumPossibleNChannels
     if nn <= MaxPlotChannel
         NoiseyChTickBox(nn) = uicontrol('style','checkbox',...
@@ -336,7 +379,8 @@ for nn=1:MaximumPossibleNChannels
             'HorizontalAlignment','center', ...
             'parent', DataEpocher_fig, ...
             'string', ['Ch' num2str(nn)],...
-            'callback',@TickBoxFunction);
+            'callback',@TickBoxFunction,...
+            'fontsize',BoxFontSize);
     else
         NoiseyChTickBox(nn) = uicontrol('style','checkbox',...
             'units', 'normalized', ...
@@ -345,7 +389,8 @@ for nn=1:MaximumPossibleNChannels
             'parent', DataEpocher_fig, ...
             'string', ['Ch' num2str(nn)],...
             'visible','off',...
-            'callback',@TickBoxFunction);
+            'callback',@TickBoxFunction,...
+            'fontsize',BoxFontSize);
     end
 end
 
@@ -378,7 +423,7 @@ WindowSizeEdit = uicontrol('style','edit', ...
     'string',num2str(WindowSize),...
     'callback',@SetWindowSize);
 
-LPFilterOrder = 100;
+LPFilterOrder = 3;
 LPFiltOrderEdit = uicontrol('style','edit', ...
     'BackgroundColor', 'white', ...
     'units', 'normalized',...
@@ -440,14 +485,14 @@ uicontrol('style','pushbutton', ...
     'string','export pre-processed data',...
     'callback',@ExportData);
 
-MaxDiffCombo = 150;             % maximum number of possible differential pairs
+MaxDiffCombo = 250;             % maximum number of possible differential pairs
 LabelOffset = 2*Height/(4+MaxDiffCombo-1);
 HeightDiffCHLabel = linspace(Bottom+LabelOffset,Bottom+Height-LabelOffset,MaxDiffCombo)-TickBoxHeight/2;
 GoodElectrodeCombos = {''};
 for nn=1:MaximumPossibleNChannels
     DiffChannelLabels(nn) = uicontrol('style','text',...
         'units', 'normalized', ...
-        'position', [TickBoxesLeft HeightDiffCHLabel(nn) TickBoxWidth TickBoxHeight], ...
+        'position', [TickBoxesLeft HeightDiffCHLabel(nn) TickBoxWidth TickBoxHeight/2], ...
         'HorizontalAlignment','center', ...
         'parent', DataEpocher_fig, ...
         'string', GoodElectrodeCombos,...
@@ -473,7 +518,7 @@ end
         end
         
         files = dir(dat_pathname);
-        files = files(4:end-2);            
+        files = files(3:end-2);            
         length(files)
         for n=1:length(files)
             if strcmp(dat_filename,files(n).name)
@@ -489,19 +534,36 @@ end
         set(TextBox_mat_filename,'string',mat_filename)
         ProbeInfo = load(mat_FileAndPath);
         StartTimeOfDatFile = ProbeInfo.DataExportTimes(FileNumber,1);
-        RelativeStimTimes = ProbeInfo.StimTime(FileNumber,:)-StartTimeOfDatFile;
+        RelativeStimTimes = ProbeInfo.StimTime(FileNumber,:) - StartTimeOfDatFile;
         NStims = length(RelativeStimTimes(RelativeStimTimes>0));         % might need to make a conditipo 
         GoodEpochIndex = true(1,NStims);            % this index is used to accept or reject epochs
     end
 
     function LoadData(varargin)
+        
         DataStatusMessage = 'loading data';
         set(DataStatusText,'string',DataStatusMessage)
+        
+%         RawData = load(dat_FileAndPath);
+        
+        R1 = 0;
+%         R2 = 60*5e3;
+        RelativeStimTimes1 = RelativeStimTimes(RelativeStimTimes>0);
+        R2  = round((RelativeStimTimes1(end)+2.1)*Fs);
+        StartCh = str2double(get(StartChEdit,'string'));
+        EndCh = str2double(get(EndChEdit,'string'));
+        
+        C1 = StartCh;
+        C2 = EndCh;
+        
+        range = [R1 C1 R2 C2];
         tic
-        RawData = load(dat_FileAndPath);
+        disp('loading data')
+        RawData = dlmread(dat_FileAndPath,',',range);
+        disp('data loaded')
         toc
 %         t = RawData(:,1);
-        RawData = RawData(:,2:end);          % need to change this to be specified
+%         RawData = RawData(:,2:end);          % need to change this to be specified
         NSamples = size(RawData,1);
         NChannels = size(RawData,2);
         set(NChannelsText,'string',['NChannels = ' num2str(NChannels)])
@@ -510,6 +572,9 @@ end
         set(DataStatusText,'string',DataStatusMessage)
 %         disp('writing data')
 %         assignin('base','RawData',RawData)
+
+        set(loadbutton,'visible','off')
+
     end
 
     function SetElectrodeCols(varargin)
@@ -535,20 +600,34 @@ end
 
     function PlotData(varargin)
         
-        StartPlotTime = floor(RelativeStimTimes(StimNumber)*Fs-(StartTime*Fs-1));
-        EndPlotTime = floor((RelativeStimTimes(StimNumber)+EndTime)*Fs);
-        NSamples4Plot = (EndTime+StartTime)*Fs;
+        if (RelativeStimTimes(StimNumber)*Fs-(StartTime*Fs-1)) > 0
+            StartPlotTime = floor(RelativeStimTimes(StimNumber)*Fs)-floor(StartTime*Fs-1);
+            EndPlotTime = floor((RelativeStimTimes(StimNumber)+EndTime)*Fs);
+
+            NSamples4Plot = (EndTime+StartTime)*Fs;
+
+        else
+            StartPlotTime = 1;
+            EndPlotTime = floor((RelativeStimTimes(StimNumber)+EndTime)*Fs);
+
+            NSamples4Plot = (EndTime)*Fs;
+        end
+        NSamples4Plot = EndPlotTime-StartPlotTime+1;
         
         if RereferenceOnOff
             PlotChannels = 1:size(DiffElectrodeIndexes,1);
             NPlotChannels = length(PlotChannels);
             temp = zeros(NSamples4Plot,NPlotChannels);
+            size(RawData)
+            EndPlotTime
+            StartPlotTime
+            
             for n=1:NPlotChannels
                 temp(:,n) = RawData(StartPlotTime:EndPlotTime,DiffElectrodeIndexes(n,1)) ...
                     - RawData(StartPlotTime:EndPlotTime,DiffElectrodeIndexes(n,2));
             end
 
-
+            disp('stuff')
         else
             % get the number of channels to plot
             PlotChannels = 1:MaxPlotChannel;
@@ -563,14 +642,23 @@ end
         OffsetMatrix = repmat(OffsetVector,NSamples4Plot,1);
 
         % demean data
-        ZeroMeanRawData = temp - repmat(mean(temp,1),NSamples4Plot,1);       % make data zero mean
-
+        means = repmat(mean(temp,1),NSamples4Plot,1);
+        ZeroMeanRawData = temp - means;       % make data zero mean
+               
         OffsetData = ZeroMeanRawData+OffsetMatrix;
             
         % plot it
         if RereferenceOnOff
+            
+            % notch filter
+%             Wn_notch = [49 51]/(Fs/2);
+%             NotchFiltOrder = 3;
+%             [b_notch a_notch] = butter(NotchFiltOrder,Wn_notch,'stop');
+%             OffsetData = flipud(filter(b_notch,a_notch,flipud(OffsetData))); 
+            
             plot(OffsetData,'k','parent',Ax)
         else
+            StartPlotChannel = 10;
             plot(OffsetData(:,~NoiseyChIndex(1:NPlotChannels)),'k','parent',Ax), hold(Ax,'on')
             plot(OffsetData(:,logical(NoiseyChIndex(1:NPlotChannels))),'r','parent',Ax), hold(Ax,'off')
         end
@@ -580,8 +668,8 @@ end
         ylim([yMin yMax])
 
         % draw a patch around the stimulation artifact
-        xPatchStart = StartTime*Fs+3;
-        xPatchEnd = StartTime*Fs+4 + SamplesAboutStim;
+        xPatchStart = StartTime*Fs+StimCorrectionOffset;
+        xPatchEnd = StartTime*Fs+StimCorrectionOffset +1 + SamplesAboutStim;
         patch([xPatchStart xPatchEnd xPatchEnd xPatchStart xPatchStart],[yMin yMin yMax yMax yMin],...
             'g','facealpha',0.5,'edgecolor','none')
         
@@ -648,7 +736,7 @@ end
 
         HeightOfTickBoxes = [linspace(Bottom+TickOffset,Bottom+Height-TickOffset,MaxPlotChannel)-TickBoxHeight/2 -1*ones(1,MaximumPossibleNChannels-MaxPlotChannel)];
 
-        for n=1:MaximumPossibleNChannels
+        for n=StartPlotChannel:MaximumPossibleNChannels
             if n <= MaxPlotChannel
                 
                 set(NoiseyChTickBox(n),'position', [TickBoxesLeft HeightOfTickBoxes(n) TickBoxWidth TickBoxHeight], ...
@@ -680,7 +768,8 @@ end
             ElectrodeComboIndex = 1;                    % this index the list of good electrode combos
             AllElectrodes = 1:MaxPlotChannel; 
             GoodElectrodeCombos = {'0'};
-            NoisyElectrodes = AllElectrodes(logical(NoiseyChIndex));
+            NoisyElectrodes = AllElectrodes(logical(NoiseyChIndex(AllElectrodes)));
+            
             for n=1:MaxPlotChannel
 
                 if ~ismember(n,NoisyElectrodes)
@@ -795,7 +884,7 @@ end
                     'position',[TickBoxesLeft HeightDiffCHLabel(n) 0.03 TickBoxHeight/2],...
                     'visible','on',...
                     'BackgroundColor', 'white',...
-                    'fontsize',8)
+                    'fontsize',5)
             end
             PlotData()
         else  
@@ -816,7 +905,7 @@ end
         disp('dont press twice')
         Samples2Remove = [];
         for n=1:length(RelativeStimTimes)
-            Samples2Remove = [Samples2Remove floor(RelativeStimTimes(n)*Fs+3:RelativeStimTimes(n)*Fs+3+SamplesAboutStim)];
+            Samples2Remove = [Samples2Remove floor(RelativeStimTimes(n)*Fs+StimCorrectionOffset:RelativeStimTimes(n)*Fs+StimCorrectionOffset+SamplesAboutStim)];
         end
         
         AllIndexes = 1:NSamples;
@@ -826,6 +915,7 @@ end
             IndexesOfGoodDataPoints = AllIndexes(GoodIndexes);
             RawData(:,n) = interp1(IndexesOfGoodDataPoints, GoodDataPoints, AllIndexes);
         end
+        RawData(isnan(RawData)) = 0;
         set(RemoveStimArtifactButton,'visible','off')
         PlotData()
     end
@@ -850,10 +940,18 @@ end
             RawData(n,:) = mean(RawData(n-WindowSize:n,:),1);
         end
         toc
-        Wn = LPFiltCutOff/(Fs/2);
-        b = fir1(LPFilterOrder,Wn);
         
-        RawData = flipud(filtfilt(b,1,flipud(RawData)));
+        % LP filter
+        Wn = LPFiltCutOff/(Fs/2);
+        [b a] = butter(LPFilterOrder,Wn);
+        
+        RawData = flipud(filter(b,a,flipud(RawData)));
+        
+        % notch filter
+        Wn_notch = [48 52]/(Fs/2);
+        NotchFiltOrder = 3;
+        [b_notch a_notch] = butter(NotchFiltOrder,Wn_notch,'stop');
+        RawData = flipud(filter(b_notch,a_notch,flipud(RawData)));      
         
         set(SmoothAndFilterButton,'visible','off')
 
@@ -877,20 +975,21 @@ end
             NPlotChannels = length(PlotChannels);
             temp = zeros(NSamples4Plot,NPlotChannels);
             for m=1:NPlotChannels
-                temp(:,m) = RawData(StartPlotTime:EndPlotTime,DiffElectrodeIndexes(m,1)) ...
-                    - RawData(StartPlotTime:EndPlotTime,DiffElectrodeIndexes(m,2));
+                if (StartPlotTime > 0) && (EndPlotTime < size(RawData,1))
+                    temp(:,m) = RawData(StartPlotTime:EndPlotTime,DiffElectrodeIndexes(m,1)) ...
+                        - RawData(StartPlotTime:EndPlotTime,DiffElectrodeIndexes(m,2));
+                end
             end
+            
             PreprocessedData(n,:,:) = temp;
             
         end
-        
-
 
         % now save the data and the channel descriptions.
         SaveFileName = [SaveFileDir '/' dat_filename(1:end-4) '_Preprocessed.mat'];
-        save(SaveFileName,'GoodElectrodeCombos','PreprocessedData',...
+        uisave({'GoodElectrodeCombos','PreprocessedData',...
             'GoodEpochIndex','RelativeStimTimes','MaxPlotChannel','StartTime',...
-            'EndTime','Fs','ElectrodeRows','ElectrodeCols','WindowSize','LPFilterOrder','LPFiltCutOff')
+            'EndTime','Fs','ElectrodeRows','ElectrodeCols','WindowSize','LPFilterOrder','LPFiltCutOff'},SaveFileName)
         disp('save ok')
      end
 end
