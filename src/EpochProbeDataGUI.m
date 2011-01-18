@@ -408,7 +408,7 @@ HeightOfTickBoxes = [linspace(Bottom+TickOffset,Bottom+Height-TickOffset,MaxPlot
 
 BoxFontSize = 8;
 
-StartPlotChannel = 5;
+StartPlotChannel = 1;       % not sure why this is here
 
 for nn=1:MaximumPossibleNChannels
     if nn <= MaxPlotChannel
@@ -492,7 +492,7 @@ SmoothAndFilterButton = uicontrol('style','pushbutton', ...
     'string','smooth and filter',...
     'callback',@SmoothAndFilter);
 
-Top = Top-2*HeightControl;
+Top = Top-1*HeightControl;
 DecimateButton = uicontrol('style','pushbutton', ...
     'BackgroundColor', 'white', ...
     'units', 'normalized',...
@@ -503,7 +503,7 @@ DecimateButton = uicontrol('style','pushbutton', ...
     'callback',@Decimate);
 
 % move to differential reference
-Top = Top-2*HeightControl;
+Top = Top-1*HeightControl;
 RereferenceOnOff = 0;
 RereferenceToggle = uicontrol('style','togglebutton', ...
     'units', 'normalized', ...
@@ -514,7 +514,7 @@ RereferenceToggle = uicontrol('style','togglebutton', ...
     'value',RereferenceOnOff,...
     'callback',@Rereference);
 
-Top = Top-2*HeightControl;
+Top = Top-1*HeightControl;
 uicontrol('style','pushbutton', ...
     'BackgroundColor', 'white', ...
     'units', 'normalized',...
@@ -671,16 +671,12 @@ end
             PlotChannels = 1:size(DiffElectrodeIndexes,1);
             NPlotChannels = length(PlotChannels);
             temp = zeros(NSamples4Plot,NPlotChannels);
-            size(RawData)
-            EndPlotTime
-            StartPlotTime
             
             for n=1:NPlotChannels
                 temp(:,n) = RawData(StartPlotTime:EndPlotTime,DiffElectrodeIndexes(n,1)) ...
                     - RawData(StartPlotTime:EndPlotTime,DiffElectrodeIndexes(n,2));
             end
 
-            disp('stuff')
         else
             % get the number of channels to plot
             PlotChannels = 1:MaxPlotChannel;
@@ -711,7 +707,7 @@ end
             
             plot(OffsetData,'k','parent',Ax)
         else
-            StartPlotChannel = 10;
+%             StartPlotChannel = 10;        % not sure why this is here????
             plot(OffsetData(:,~NoiseyChIndex(1:NPlotChannels)),'k','parent',Ax), hold(Ax,'on')
             plot(OffsetData(:,logical(NoiseyChIndex(1:NPlotChannels))),'r','parent',Ax), hold(Ax,'off')
         end
@@ -787,12 +783,15 @@ end
         % now need to adjust the tick boxes
         TickOffset = 2*Height/(4+MaxPlotChannel-1);
 
-        HeightOfTickBoxes = [linspace(Bottom+TickOffset,Bottom+Height-TickOffset,MaxPlotChannel)-TickBoxHeight/2 -1*ones(1,MaximumPossibleNChannels-MaxPlotChannel)];
+        HeightOfTickBoxes = [linspace(Bottom+TickOffset,...
+            Bottom+Height-TickOffset,...
+            MaxPlotChannel)-TickBoxHeight/2 -1*ones(1,MaximumPossibleNChannels-MaxPlotChannel)];
 
         for n=StartPlotChannel:MaximumPossibleNChannels
             if n <= MaxPlotChannel
                 
-                set(NoiseyChTickBox(n),'position', [TickBoxesLeft HeightOfTickBoxes(n) TickBoxWidth TickBoxHeight], ...
+                set(NoiseyChTickBox(n),'units','normalized',...
+                    'position', [TickBoxesLeft HeightOfTickBoxes(n) TickBoxWidth TickBoxHeight], ...
                     'string', ['Ch' num2str(n)],...
                     'visible','on')
             else
@@ -1048,6 +1047,6 @@ end
  
     function UpdateMaxPlotChannel(varargin)
         MaxPlotChannel = str2double(get(EndChEdit,'string'));
-        set(MaxPlotChannel,'string',num2str(MaxPlotChannel));
+        set(MaxPlotChEdit,'string',num2str(MaxPlotChannel));
     end
 end
