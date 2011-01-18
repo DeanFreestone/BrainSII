@@ -143,7 +143,8 @@ EndChEdit = uicontrol('style','edit', ...
     'HorizontalAlignment','center', ...
     'parent', DataEpocher_fig, ...
     'string', num2str(EndCh),...
-    'backgroundcolor',ControlColor);
+    'backgroundcolor',ControlColor,...
+    'callback',@UpdateMaxPlotChannel);
 
 %~~~~
 Top = Top-1*HeightControl;
@@ -592,7 +593,7 @@ end
         StartStim = str2double(get(StartStimEdit,'string'));
         EndStim = str2double(get(EndStimEdit,'string'));
         
-        NStims = EndStim - StartStim;
+        NStims = EndStim - StartStim + 1;
         
         RelativeStimTimes = RelativeStimTimes(RelativeStimTimes>0);
         
@@ -1043,5 +1044,10 @@ end
             'GoodEpochIndex','RelativeStimTimes','MaxPlotChannel','StartTime',...
             'EndTime','Fs','ElectrodeRows','ElectrodeCols','WindowSize','LPFilterOrder','LPFiltCutOff'},SaveFileName)
         disp('save ok')
-     end
+    end
+ 
+    function UpdateMaxPlotChannel(varargin)
+        MaxPlotChannel = str2double(get(EndChEdit,'string'));
+        set(MaxPlotChannel,'string',num2str(MaxPlotChannel));
+    end
 end
